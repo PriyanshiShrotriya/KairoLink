@@ -43,7 +43,7 @@ Spring Data JPA
              │
              ▼
 Database Layer
-MySQL / PostgreSQL
+PostgreSQL
 ```
 
 ### Cross-Cutting Concerns
@@ -58,20 +58,21 @@ MySQL / PostgreSQL
 
 ## 🛠️ Tech Stack
 
-| Category        | Technologies                                  |
-| --------------- | --------------------------------------------- |
-| Frontend        | Thymeleaf, HTML5, CSS3, JavaScript, Bootstrap |
-| Backend         | Java, Spring MVC                              |
-| ORM             | Spring Data JPA / Hibernate                   |
-| Database        | MySQL / PostgreSQL                            |
-| Security        | Spring Security                               |
-| Validation      | Bean Validation                               |
-| Logging         | SLF4J, Logback                                |
-| Build Tool      | Maven                                         |
-| Packaging       | JAR (Spring Boot default, embedded Tomcat)    |
-| API Testing     | Postman                                       |
-| Version Control | Git & GitHub                                  |
-| Deployment      | Docker + Render / Railway / Fly.io            |
+| Category        | Technologies                                                       |
+| --------------- | ------------------------------------------------------------------ |
+| Language        | Java 21 (project baseline per Spring Initializr selection) |
+| Frontend        | Thymeleaf, HTML5, CSS3, JavaScript, Bootstrap 5                   |
+| Backend         | Spring MVC + Spring Boot 4.1.x                                     |
+| ORM             | Spring Data JPA / Hibernate                                        |
+| Database        | PostgreSQL (chosen DB for this project)                             |
+| Security        | Spring Security                                                     |
+| Validation      | Jakarta Bean Validation                                            |
+| Logging         | SLF4J, Logback                                                     |
+| Build Tool      | Maven                                                              |
+| Packaging       | JAR (Spring Boot default, embedded Tomcat)                         |
+| API Testing     | Postman                                                            |
+| Version Control | Git & GitHub                                                       |
+| Deployment      | Docker + Render / Railway / Fly.io                                  |
 
 ---
 
@@ -111,9 +112,9 @@ KairoLink/
 
 ### Prerequisites
 
-* Java 17 (LTS)
+* Java 21 as the project baseline (per Spring Initializr selection)
 * Maven
-* MySQL / PostgreSQL
+* PostgreSQL (this project uses PostgreSQL consistently)
 * Git
 * (Optional) Docker, for containerized deployment
 * **VS Code**, with:

@@ -7,14 +7,16 @@ Ground rules to keep the project consistent, working, and not a mess of AI-gener
 ## What to Use
 
 ### Core Stack (locked — don't deviate)
-- **Java 17**, **Spring Boot 4.1.x** (on Spring Framework 7.0.x)
+- **Java 21** as the project baseline for this development track, with Spring Boot 4.1.x (on Spring Framework 7.0.x)
 - **Spring MVC** for controllers, **Thymeleaf** for views (`spring-boot-starter-thymeleaf`, auto-configured view resolver)
 - **Spring Data JPA + Hibernate** for all DB access — no raw JDBC unless there's a specific reason
 - **Spring Security** for auth — no custom-rolled auth/session handling (use `thymeleaf-extras-springsecurity6` for role checks in templates)
 - **Maven** for build/dependency management
-- **MySQL** (or PostgreSQL — pick one and stick with it, don't mix)
+- **PostgreSQL** is the chosen database for this project — use it consistently for local dev and deployment; no MySQL in this codebase
 - **JAR packaging** (Spring Boot default — embedded Tomcat, no external server required)
 - **Spring Boot DevTools** in dev for auto-restart + template hot-reload
+
+> Note: OpenJDK 25.0.4 is compatible as a local runtime and may be used for testing in a workstation environment, but the project baseline for this development track is Java 21 per the Spring Initializr selection.
 
 ### Frontend
 - **Thymeleaf** for all server-rendered pages — templates live under `src/main/resources/templates/`, valid HTML with `th:*` attributes
