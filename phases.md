@@ -11,7 +11,7 @@ A phased build plan, sequenced so each phase produces a working, testable slice 
 - Initialize Maven project (Spring Boot, JAR packaging, `spring-boot-starter-thymeleaf` + `spring-boot-starter-web` + DevTools)
 - Set up folder structure (`controller`, `service`, `repository`, `model`, `dto`, etc.)
 - Configure `application.properties` (DB connection, server port — Thymeleaf's view resolver is auto-configured, no manual setup needed)
-- Set up MySQL/PostgreSQL database + create schema
+- Set up PostgreSQL database + create schema
 - Confirm a basic "Hello KairoLink" Thymeleaf page renders at `src/main/resources/templates/`, with DevTools hot-reload working
 - Set up Git repo, `.gitignore`, README
 - Set up base layout fragments (`fragments/header.html`, `fragments/footer.html`, `fragments/navbar.html`) and global CSS/JS structure under `static/`
@@ -126,7 +126,7 @@ A phased build plan, sequenced so each phase produces a working, testable slice 
 **Goal:** Get KairoLink live.
 
 - Package as a self-contained JAR (`mvn clean package`), containerize with the project `Dockerfile`
-- Set up production database (separate from dev — managed Postgres/MySQL on the chosen host, e.g. Render/Railway/Neon/Supabase)
+- Set up production database (separate from dev — managed PostgreSQL on the chosen host, e.g. Render/Railway/Neon/Supabase)
 - Environment-specific configs (`application-prod.properties` or environment variables — never commit prod DB credentials)
 - Set up basic monitoring/logging for production
 - Deploy to chosen host (Render / Railway / Fly.io — all support "deploy from Dockerfile" or "deploy a Spring Boot JAR" with minimal config)

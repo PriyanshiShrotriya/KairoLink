@@ -86,7 +86,7 @@ Event triggers (booking request, accept/reject, ride reminder)
 └───────────────────────┬────────────────────────────────┘
                          │
 ┌───────────────────────▼────────────────────────────────┐
-│  Database Layer (MySQL / PostgreSQL)                    │
+│  Database Layer (PostgreSQL)                            │
 │  - Users, Rides, Bookings, Payments, Ratings tables      │
 └──────────────────────────────────────────────────────────┘
 
@@ -269,7 +269,8 @@ This project targets **Spring Boot 4.1.x**, not 3.x. Spring Boot 3.5 (the last 3
 - **Jackson 3** — Boot 4 moved off Jackson 2. If Copilot suggests `com.fasterxml.jackson.databind.ObjectMapper` configuration or annotations, confirm it's using Jackson 3 APIs, not stale Jackson 2 snippets from older tutorials — this is one of the more common places outdated suggestions show up.
 - **JUnit 4 support removed entirely** — all tests (Phase 7) must be JUnit 5 (`org.junit.jupiter`); this was already best practice, now it's mandatory.
 - **Undertow support dropped** — not relevant here since this project uses embedded Tomcat, not Undertow.
-- **Java 17 remains the minimum** — Boot 4.1 supports up to Java 26, but nothing here requires going past 17; stay on 17 unless there's a specific reason to move.
+- **Java 21 is the chosen project baseline for this development track** — Boot 4.1 supports up to Java 26; Java 21 is fully supported and aligns with your Spring Initializr selection.
+- **Local JDK note:** OpenJDK 25.0.4 may be present on a workstation for compatibility testing, but the project baseline is Java 21 per the developer's Spring Initializr choice.
 - Thymeleaf, Spring Data JPA, Spring Security, and Lombok all have Boot-4-compatible versions and work the same way at the level this project uses them — no architectural changes needed beyond what's already reflected in this document.
 
 If Copilot (or its inline suggestions) generates code that looks like a Boot 3.x pattern — old Jackson 2 imports, `spring-boot-starter-tomcat` as a direct dependency instead of relying on the default embedded server, or Boot-3-era config property names — treat it the same as any other stale-suggestion drift per `rules.md`.
@@ -277,7 +278,7 @@ If Copilot (or its inline suggestions) generates code that looks like a Boot 3.x
 ### 3.1 Backend
 | Layer | Technology |
 |---|---|
-| Language | Java 17 (LTS) |
+| Language | Java 21 (project baseline for this development track) |
 | Framework | Spring Boot 4.1.x (on Spring Framework 7.0.x) |
 | Web layer | Spring MVC (Controllers) via `DispatcherServlet` |
 | View layer | Thymeleaf (`spring-boot-starter-thymeleaf`, auto-configured `ThymeleafViewResolver`) |
@@ -298,7 +299,7 @@ If Copilot (or its inline suggestions) generates code that looks like a Boot 3.x
 ### 3.3 Database
 | Purpose | Technology |
 |---|---|
-| Primary DB | MySQL (or PostgreSQL) |
+| Primary DB | PostgreSQL (chosen and used consistently for this project) |
 | ORM | Hibernate (via Spring Data JPA) |
 | Migrations | Flyway or Liquibase (recommended for schema versioning) |
 
