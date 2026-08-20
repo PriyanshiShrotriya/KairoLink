@@ -144,7 +144,7 @@ In short: a platform where **Drivers publish rides** they're already taking, and
 
 ## 7. Constraints & Assumptions
 
-- Built with Java, Spring Boot, JSP/Servlets, HTML/CSS/JS (per finalized tech stack) — no external frontend framework (React/Angular) in v1
+- Built with Java, Spring Boot, Thymeleaf, HTML/CSS/JS (per finalized tech stack) — no external frontend framework (React/Angular) in v1
 - Single-region deployment initially (no multi-region/geo-distribution needs at MVP stage)
 - No real-time payment processing in MVP — cost settlement assumed offline (cash) unless payment module is added later
 - Seat/booking data consistency handled at the application/transaction level, not via external message queues (not needed at this scale)

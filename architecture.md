@@ -7,7 +7,7 @@
 
 ### 1.1 Overview
 
-KairoLink is a carpooling platform connecting **Drivers** (offering rides) with **Riders** (booking seats). The system follows a classic **layered MVC architecture** built on Spring Boot, using JSP as the view layer.
+KairoLink is a carpooling platform connecting **Drivers** (offering rides) with **Riders** (booking seats). The system follows a classic **layered MVC architecture** built on Spring Boot, using Thymeleaf as the view layer.
 
 **User roles:**
 - **Rider** — searches rides, books seats, rates drivers
@@ -33,7 +33,7 @@ Driver logs in → "Offer a Ride" form (source, destination, date/time, seats, p
 ```
 Rider searches (source, destination, date) → Controller queries Service
    → Service applies matching logic (route/date/seat availability)
-   → Results shown in JSP view → Rider selects ride → Sends booking request
+   → Results shown in Thymeleaf view → Rider selects ride → Sends booking request
    → Driver notified → Driver Accepts/Rejects
    → On accept: Booking CONFIRMED → Seats decremented → Notification sent to Rider
 ```
@@ -60,15 +60,15 @@ Event triggers (booking request, accept/reject, ride reminder)
 
 ```
 ┌──────────────────────────────────────────────────────┐
-│  Presentation Layer (JSP + HTML/CSS/JS + Bootstrap)   │
-│  - Views rendered via JSP/JSTL                        │
+│  Presentation Layer (Thymeleaf + HTML/CSS/JS + Bootstrap) │
+│  - Views rendered via Thymeleaf templates              │
 │  - Static assets: CSS, JS, images                     │
 └───────────────────────┬────────────────────────────────┘
                          │  (Form submits / AJAX calls)
 ┌───────────────────────▼────────────────────────────────┐
 │  Controller Layer (Spring MVC Controllers)             │
 │  - @Controller classes handle requests                 │
-│  - Map to JSP views (ViewResolver) or return JSON      │
+│  - Map to Thymeleaf views (ViewResolver) or return JSON│
 │  - Input validation (Bean Validation)                  │
 └───────────────────────┬────────────────────────────────┘
                          │
@@ -101,12 +101,13 @@ Cross-cutting concerns (applied across layers):
 
 | Concern | Approach |
 |---|---|
-| MVC pattern | Spring MVC with JSP views (`InternalResourceViewResolver`) |
-| Packaging | **WAR** (required for embedded Tomcat + JSP support — JAR packaging does not support JSP with embedded servers) |
+| MVC pattern | Spring MVC with Thymeleaf views (`ThymeleafViewResolver`, auto-configured by `spring-boot-starter-thymeleaf`) |
+| Packaging | **JAR** (Spring Boot default — Thymeleaf works natively with embedded Tomcat, no external server needed) |
 | Data access | Spring Data JPA (Hibernate) over raw Servlets/JDBC |
 | Security | Spring Security — form login + role-based (`ROLE_RIDER`, `ROLE_DRIVER`, `ROLE_ADMIN`) |
 | Dynamic UI bits | Vanilla JS + Fetch/AJAX for things like live search, seat counters, without full page reload |
 | Validation | Server-side via `jakarta.validation` annotations on DTOs |
+| Dev experience | Spring Boot DevTools — auto-restart + live template reload on save |
 
 ---
 
@@ -194,38 +195,35 @@ kairolink/
 │   │   │           ├── DistanceCalculator.java     # route/geo matching helper
 │   │   │           └── Constants.java
 │   │   │
-│   │   ├── resources/
-│   │   │   ├── application.properties               # or application.yml
-│   │   │   ├── application-dev.properties
-│   │   │   ├── application-prod.properties
-│   │   │   ├── static/                               # served directly (if not WAR-only JSP setup)
-│   │   │   └── messages.properties                   # i18n (optional)
-│   │   │
-│   │   └── webapp/
-│   │       ├── WEB-INF/
-│   │       │   └── views/                            # JSP pages
-│   │       │       ├── auth/
-│   │       │       │   ├── login.jsp
-│   │       │       │   └── register.jsp
-│   │       │       ├── rider/
-│   │       │       │   ├── dashboard.jsp
-│   │       │       │   ├── search-ride.jsp
-│   │       │       │   └── my-bookings.jsp
-│   │       │       ├── driver/
-│   │       │       │   ├── dashboard.jsp
-│   │       │       │   ├── publish-ride.jsp
-│   │       │       │   └── manage-bookings.jsp
-│   │       │       ├── admin/
-│   │       │       │   └── dashboard.jsp
-│   │       │       ├── common/
-│   │       │       │   ├── header.jsp
-│   │       │       │   ├── footer.jsp
-│   │       │       │   └── navbar.jsp
-│   │       │       └── error/
-│   │       │           ├── 404.jsp
-│   │       │           └── 500.jsp
+│   │   └── resources/
+│   │       ├── application.properties                # or application.yml
+│   │       ├── application-dev.properties
+│   │       ├── application-prod.properties
+│   │       ├── messages.properties                    # i18n (optional)
 │   │       │
-│   │       └── assets/                               # static frontend assets
+│   │       ├── templates/                             # Thymeleaf views
+│   │       │   ├── auth/
+│   │       │   │   ├── login.html
+│   │       │   │   └── register.html
+│   │       │   ├── rider/
+│   │       │   │   ├── dashboard.html
+│   │       │   │   ├── search-ride.html
+│   │       │   │   └── my-bookings.html
+│   │       │   ├── driver/
+│   │       │   │   ├── dashboard.html
+│   │       │   │   ├── publish-ride.html
+│   │       │   │   └── manage-bookings.html
+│   │       │   ├── admin/
+│   │       │   │   └── dashboard.html
+│   │       │   ├── fragments/                         # reusable Thymeleaf fragments
+│   │       │   │   ├── header.html
+│   │       │   │   ├── footer.html
+│   │       │   │   └── navbar.html
+│   │       │   └── error/
+│   │       │       ├── 404.html
+│   │       │       └── 500.html
+│   │       │
+│   │       └── static/                                # static frontend assets, served directly
 │   │           ├── css/
 │   │           │   ├── style.css
 │   │           │   └── dashboard.css
@@ -252,8 +250,10 @@ kairolink/
 ```
 
 **Notes on structure:**
-- `controller/api/` separates REST-style JSON endpoints (for AJAX/JS-driven UI parts like live search) from JSP-returning controllers.
-- `dto/request` and `dto/response` keep entities decoupled from what's exposed to the view/API — good practice even in a JSP app.
+- No `webapp/` directory needed — Thymeleaf templates and static assets both live under `src/main/resources/`, which is standard Spring Boot JAR layout.
+- `controller/api/` separates REST-style JSON endpoints (for AJAX/JS-driven UI parts like live search) from Thymeleaf-returning controllers.
+- `templates/fragments/` holds reusable `header.html`/`footer.html`/`navbar.html` included via Thymeleaf's `th:insert`/`th:replace`, replacing what used to be JSP includes.
+- `dto/request` and `dto/response` keep entities decoupled from what's exposed to the view/API — good practice regardless of templating engine.
 - `service` interfaces + `service/impl` keep business logic swappable/testable.
 - `docs/` folder is where your other planning files (requirements, tech stack notes, etc.) can live alongside this one.
 
@@ -266,18 +266,18 @@ kairolink/
 |---|---|
 | Language | Java 17 (LTS) |
 | Framework | Spring Boot 3.x |
-| Web layer | Spring MVC (Controllers) + Servlets (under the hood via `DispatcherServlet`) |
-| View layer | JSP + JSTL (`InternalResourceViewResolver`) |
+| Web layer | Spring MVC (Controllers) via `DispatcherServlet` |
+| View layer | Thymeleaf (`spring-boot-starter-thymeleaf`, auto-configured `ThymeleafViewResolver`) |
 | Data access | Spring Data JPA + Hibernate |
-| Security | Spring Security (session-based auth, role-based access control) |
+| Security | Spring Security (session-based auth, role-based access control) + `thymeleaf-extras-springsecurity6` for role-aware template rendering (`sec:authorize`) |
 | Validation | Jakarta Bean Validation (`@Valid`, `@NotNull`, etc.) |
 | Build tool | Maven |
-| Packaging | WAR (required to run JSP on embedded/external Tomcat) |
+| Packaging | **JAR** (Spring Boot default — embedded Tomcat serves Thymeleaf natively, no WAR/external server needed) |
 
 ### 3.2 Frontend
 | Purpose | Technology |
 |---|---|
-| Templating | JSP + JSTL |
+| Templating | Thymeleaf (server-rendered HTML, natural templating — files are valid HTML even before rendering) |
 | Styling | CSS3 + Bootstrap 5 (responsive layout) |
 | Interactivity | Vanilla JavaScript (AJAX/Fetch for live search, dynamic seat counters, form validation) |
 | Icons | Bootstrap Icons / Font Awesome |
@@ -293,12 +293,15 @@ kairolink/
 | Purpose | Tool |
 |---|---|
 | Dependency/Build | Maven |
-| Server | Embedded Tomcat (dev) / External Tomcat (prod, for WAR deployment) |
+| Server | Embedded Tomcat (dev **and** prod) — single self-contained JAR, `java -jar kairolink.jar` |
 | Boilerplate reduction | Lombok |
 | Logging | SLF4J + Logback |
 | API testing | Postman |
 | Version control | Git + GitHub |
-| IDE | IntelliJ IDEA / Eclipse STS |
+| IDE | **VS Code** (Extension Pack for Java, Spring Boot Extension Pack, Lombok Annotations Support) |
+| AI pair-programmer | GitHub Copilot / Copilot Chat (in VS Code) — see `rules.md` for boundaries |
+| Containerization | Docker (optional but recommended — trivial with a JAR: `FROM eclipse-temurin:17-jre`, `COPY target/*.jar app.jar`, `ENTRYPOINT` run) |
+| Hosting | Render / Railway / Fly.io (free/low-cost tiers all support "deploy a Spring Boot JAR" directly or via Docker) |
 
 ### 3.5 Optional/Future Additions
 - **Payment Gateway** — Razorpay/Stripe integration via `PaymentService`
@@ -309,11 +312,25 @@ kairolink/
 
 ---
 
-## Important Technical Note on JSP + Spring Boot
+## VS Code Setup Notes
 
-Spring Boot's embedded Tomcat has **limited JSP support**:
-- You must package the app as a **WAR**, not a JAR
-- JSPs must live under `src/main/webapp/WEB-INF/views/`
-- For production, deploying to an **external Tomcat** server is more reliable than relying on embedded Tomcat for JSP rendering
+Since this project is now being vibe-coded in **VS Code with GitHub Copilot** (rather than IntelliJ), a few practical notes:
 
-If this becomes a pain point later, the fallback is swapping JSP for **Thymeleaf** (works cleanly with embedded Tomcat + JAR packaging) — but since you specifically want JSP/Servlets experience, the WAR + external Tomcat route is the way to go.
+- Install: **Extension Pack for Java** (Debugger, Maven, Test Runner), **Spring Boot Extension Pack** (Spring Boot Dashboard, Initializr, Tools), **Lombok Annotations Support for VS Code**, **GitHub Copilot** + **GitHub Copilot Chat**. Also grab a Thymeleaf-aware extension (e.g. "vscode-thymeleaf") for `th:*` attribute highlighting/completion — Thymeleaf templates are plain HTML, so even without it you get full HTML tooling for free, unlike JSP.
+- Run the app via the **Spring Boot Dashboard** panel or `mvn spring-boot:run` from the integrated terminal. Enable **Spring Boot DevTools** (`spring-boot-devtools` dependency) so template edits under `src/main/resources/templates/` hot-reload in the browser without a manual restart.
+- Use **Copilot Chat** with `#file` references to point it at `architecture.md`, `rules.md`, and `requirements.md` at the start of a session so its suggestions stay inside the locked stack — Copilot doesn't automatically know these files exist unless they're open or referenced.
+- Copilot's inline suggestions are more prone to drifting toward JSP/JSTL syntax (older, more common in its training data for "Spring MVC view" completions) than a chat-based assistant — double-check any inline template suggestion actually uses Thymeleaf's `th:` attribute syntax, not JSTL tags.
+
+---
+
+## Note on Thymeleaf vs JSP
+
+This project uses **Thymeleaf**, not JSP, for the view layer. Reasons this fits a project you intend to actually deploy:
+
+- **JAR packaging** — Spring Boot's default, single self-contained artifact (`java -jar kairolink.jar`), no WAR/external Tomcat step.
+- **Natural templating** — Thymeleaf files are valid, browser-openable HTML even before Spring renders them (`th:*` attributes degrade gracefully), which also means designers/Copilot can reason about them as plain HTML.
+- **First-class Spring Boot support** — `spring-boot-starter-thymeleaf` auto-configures the view resolver; no manual `ViewResolver` bean wiring the way JSP needs.
+- **Deployment-friendly** — works identically on any host that runs a JAR or a Docker container (Render, Railway, Fly.io, a plain VPS) — no dependency on an external servlet container being present.
+- **Security integration** — `thymeleaf-extras-springsecurity6` gives clean `sec:authorize="hasRole('DRIVER')"`-style conditionals in templates, directly using the same roles as `SecurityConfig.java`.
+
+The layered MVC pattern, controller/service/repository structure, and everything else in this document is otherwise unchanged from the earlier JSP-based plan — only the view layer and packaging format changed.

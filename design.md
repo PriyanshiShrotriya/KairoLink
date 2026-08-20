@@ -68,7 +68,7 @@ Maps directly to `RideStatus` and `BookingStatus` enums — keep this consistent
 - **Amber is earned, not everywhere.** Reserve it for the primary action on any given screen (one amber CTA per view, not five). It should feel like the moment a ride locks in.
 - **Teal signals "safe to proceed"** — availability, good ratings, confirmed bookings. Never use it for anything neutral.
 - **Coral is only for things that need attention or reversal** — never decorative.
-- Keep large surfaces on `--kl-cloud` / `--kl-surface`, not indigo — indigo is for structure and accents, not backgrounds of content-heavy pages (JSP forms, tables) which need to stay legible.
+- Keep large surfaces on `--kl-cloud` / `--kl-surface`, not indigo — indigo is for structure and accents, not backgrounds of content-heavy pages (Thymeleaf forms, tables) which need to stay legible.
 - Maintain **WCAG AA contrast** minimum: white text on `--kl-indigo` passes; charcoal text on `--kl-cloud`/`--kl-surface` passes; avoid amber text on white (fails contrast) — amber is for backgrounds/borders/icons, not body text.
 
 ---
@@ -78,10 +78,10 @@ Maps directly to `RideStatus` and `BookingStatus` enums — keep this consistent
 | Role | Typeface | Why |
 |---|---|---|
 | **Display** (headings, hero text, ride prices) | **Sora** | Geometric but warm, has a bit of mobility/tech personality without being cold — good for a product about motion |
-| **Body** (paragraphs, forms, nav, buttons) | **Inter** | Extremely legible at small sizes, neutral workhorse — right choice for form-heavy JSP pages (login, booking, search results) |
+| **Body** (paragraphs, forms, nav, buttons) | **Inter** | Extremely legible at small sizes, neutral workhorse — right choice for form-heavy Thymeleaf pages (login, booking, search results) |
 | **Mono / Utility** (ride codes, prices in tables, timestamps, seat counts) | **JetBrains Mono** | Gives numeric/data content a "ticket stub" precision feel — fitting for a booking confirmation or fare breakdown |
 
-**Loading (Google Fonts, add to `header.jsp` or a shared layout include):**
+**Loading (Google Fonts, add to `fragments/header.html` or a shared layout fragment):**
 
 ```html
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -167,7 +167,7 @@ body, p, label, td, input, textarea, select {
 - **Display font (Sora) only for headings and hero moments** — never body copy, never form fields. It carries the personality; overusing it dilutes that.
 - **Numbers get the mono treatment.** A ride price (`₹240`), a booking ID (`#KL-8841`), or a seat count should visually read as "data," distinct from prose — reinforces trust and precision, especially important for a product handling money and bookings.
 - **Status badges use the micro/label style** (uppercase, letter-spaced, small) paired with the semantic status colors from Section 1.2 — e.g. a "CONFIRMED" badge in teal, "PENDING" in amber.
-- Keep line length readable on JSP content pages — max `~75ch` for body paragraphs (ride descriptions, terms, admin notes).
+- Keep line length readable on Thymeleaf content pages — max `~75ch` for body paragraphs (ride descriptions, terms, admin notes).
 - Don't mix more than 2 weights of Sora on one screen (600 for most headings, 700 reserved for the single largest hero heading only).
 
 ---

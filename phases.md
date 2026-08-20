@@ -8,15 +8,15 @@ A phased build plan, sequenced so each phase produces a working, testable slice 
 
 **Goal:** Get a running skeleton before writing any real feature.
 
-- Initialize Maven project (Spring Boot, WAR packaging)
+- Initialize Maven project (Spring Boot, JAR packaging, `spring-boot-starter-thymeleaf` + `spring-boot-starter-web` + DevTools)
 - Set up folder structure (`controller`, `service`, `repository`, `model`, `dto`, etc.)
-- Configure `application.properties` (DB connection, server port, view resolver for JSP)
+- Configure `application.properties` (DB connection, server port — Thymeleaf's view resolver is auto-configured, no manual setup needed)
 - Set up MySQL/PostgreSQL database + create schema
-- Configure JSP + JSTL rendering (confirm a basic "Hello KairoLink" JSP page renders)
+- Confirm a basic "Hello KairoLink" Thymeleaf page renders at `src/main/resources/templates/`, with DevTools hot-reload working
 - Set up Git repo, `.gitignore`, README
-- Set up base layout JSPs (`header.jsp`, `footer.jsp`, `navbar.jsp`) and global CSS/JS structure
+- Set up base layout fragments (`fragments/header.html`, `fragments/footer.html`, `fragments/navbar.html`) and global CSS/JS structure under `static/`
 
-**Output:** App boots, DB connects, one static JSP page renders end-to-end.
+**Output:** App boots, DB connects, one static Thymeleaf page renders end-to-end.
 
 ---
 
@@ -97,7 +97,7 @@ A phased build plan, sequenced so each phase produces a working, testable slice 
 
 **Goal:** Make it look and feel like a real product, not a prototype.
 
-- Apply consistent theme (per `theme.md`) across all JSPs
+- Apply consistent theme (per `design.md`) across all Thymeleaf templates
 - Responsive layout pass (Bootstrap grid, mobile breakpoints)
 - Form validation feedback (client-side JS + server-side error display)
 - Loading states, empty states (e.g. "no rides found"), error pages (404/500)
@@ -125,11 +125,11 @@ A phased build plan, sequenced so each phase produces a working, testable slice 
 
 **Goal:** Get KairoLink live.
 
-- Package as WAR, deploy to external Tomcat (or containerize with Docker)
-- Set up production database (separate from dev)
-- Environment-specific configs (`application-prod.properties`)
+- Package as a self-contained JAR (`mvn clean package`), containerize with the project `Dockerfile`
+- Set up production database (separate from dev — managed Postgres/MySQL on the chosen host, e.g. Render/Railway/Neon/Supabase)
+- Environment-specific configs (`application-prod.properties` or environment variables — never commit prod DB credentials)
 - Set up basic monitoring/logging for production
-- Deploy to chosen host (AWS/Render/etc.)
+- Deploy to chosen host (Render / Railway / Fly.io — all support "deploy from Dockerfile" or "deploy a Spring Boot JAR" with minimal config)
 
 **Output:** KairoLink is live and accessible via a public URL.
 

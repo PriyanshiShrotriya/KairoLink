@@ -27,7 +27,7 @@ It follows a **layered Spring MVC architecture** with separate presentation, con
 
 ```text
 Presentation Layer
-JSP + JSTL + HTML/CSS/JS + Bootstrap
+Thymeleaf + HTML/CSS/JS + Bootstrap
              │
              ▼
 Controller Layer
@@ -60,7 +60,7 @@ MySQL / PostgreSQL
 
 | Category        | Technologies                                  |
 | --------------- | --------------------------------------------- |
-| Frontend        | JSP, JSTL, HTML5, CSS3, JavaScript, Bootstrap |
+| Frontend        | Thymeleaf, HTML5, CSS3, JavaScript, Bootstrap |
 | Backend         | Java, Spring MVC                              |
 | ORM             | Spring Data JPA / Hibernate                   |
 | Database        | MySQL / PostgreSQL                            |
@@ -68,8 +68,10 @@ MySQL / PostgreSQL
 | Validation      | Bean Validation                               |
 | Logging         | SLF4J, Logback                                |
 | Build Tool      | Maven                                         |
+| Packaging       | JAR (Spring Boot default, embedded Tomcat)    |
 | API Testing     | Postman                                       |
 | Version Control | Git & GitHub                                  |
+| Deployment      | Docker + Render / Railway / Fly.io            |
 
 ---
 
@@ -90,17 +92,15 @@ KairoLink/
 │       │       ├── security/
 │       │       └── exception/
 │       │
-│       ├── resources/
-│       │   └── application.properties
-│       │
-│       └── webapp/
-│           ├── WEB-INF/
-│           │   └── views/
-│           └── resources/
+│       └── resources/
+│           ├── application.properties
+│           ├── templates/          # Thymeleaf views (.html)
+│           └── static/
 │               ├── css/
 │               ├── js/
 │               └── images/
 │
+├── Dockerfile
 ├── pom.xml
 └── README.md
 ```
@@ -111,11 +111,16 @@ KairoLink/
 
 ### Prerequisites
 
-* Java
+* Java 17 (LTS)
 * Maven
 * MySQL / PostgreSQL
-* Apache Tomcat
 * Git
+* (Optional) Docker, for containerized deployment
+* **VS Code**, with:
+  * Extension Pack for Java
+  * Spring Boot Extension Pack
+  * Lombok Annotations Support for VS Code
+  * GitHub Copilot + GitHub Copilot Chat
 
 ### Clone the Repository
 
@@ -140,7 +145,23 @@ mvn clean install
 
 ### Run the Application
 
-Deploy the generated WAR file to **Apache Tomcat** and open the application in your browser.
+```bash
+java -jar target/kairolink-0.0.1-SNAPSHOT.jar
+```
+
+Or, for local development in VS Code, use the **Spring Boot Dashboard** panel, or run `mvn spring-boot:run` from the integrated terminal — embedded Tomcat starts automatically, no separate server install needed. Then open `http://localhost:8080`.
+
+### Deploying
+
+KairoLink packages as a single self-contained JAR (embedded Tomcat), so deployment is just "run the JAR" — no external servlet container to configure:
+
+* **Docker** — build with the included `Dockerfile` (`docker build -t kairolink .`) and run/push anywhere that runs containers.
+* **Render / Railway / Fly.io** — all support "deploy a Spring Boot app" directly from a GitHub repo or via the Dockerfile, with free/low-cost tiers.
+* Set `application-prod.properties` (or environment variables) for the production DB connection before deploying — see `phases.md` Phase 8.
+
+### Vibe Coding This Project
+
+This project is being built with **VS Code + GitHub Copilot** as an AI pair-programmer. Before starting a session, see `rules.md` for the ground rules (locked tech stack, what Copilot is and isn't allowed to touch) and `architecture.md` for the folder structure and layering Copilot should follow.
 
 ---
 
