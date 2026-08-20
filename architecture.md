@@ -261,11 +261,24 @@ kairolink/
 
 ## 3. Tech Stack
 
+### 3.0 A Note on Spring Boot 4
+
+This project targets **Spring Boot 4.1.x**, not 3.x. Spring Boot 3.5 (the last 3.x line) reached open-source end-of-life on June 30, 2026, and Spring Initializr now only generates 4.x projects — so 4.1.x is both the only practical starting point and the actively supported one. A few things that changed and matter here:
+
+- **Spring Framework 7 / Jakarta EE 11 baseline** — `jakarta.*` imports (already used throughout this doc for validation) are unaffected; Boot 4 continues that Jakarta convention from Boot 3, just on a newer platform baseline.
+- **Jackson 3** — Boot 4 moved off Jackson 2. If Copilot suggests `com.fasterxml.jackson.databind.ObjectMapper` configuration or annotations, confirm it's using Jackson 3 APIs, not stale Jackson 2 snippets from older tutorials — this is one of the more common places outdated suggestions show up.
+- **JUnit 4 support removed entirely** — all tests (Phase 7) must be JUnit 5 (`org.junit.jupiter`); this was already best practice, now it's mandatory.
+- **Undertow support dropped** — not relevant here since this project uses embedded Tomcat, not Undertow.
+- **Java 17 remains the minimum** — Boot 4.1 supports up to Java 26, but nothing here requires going past 17; stay on 17 unless there's a specific reason to move.
+- Thymeleaf, Spring Data JPA, Spring Security, and Lombok all have Boot-4-compatible versions and work the same way at the level this project uses them — no architectural changes needed beyond what's already reflected in this document.
+
+If Copilot (or its inline suggestions) generates code that looks like a Boot 3.x pattern — old Jackson 2 imports, `spring-boot-starter-tomcat` as a direct dependency instead of relying on the default embedded server, or Boot-3-era config property names — treat it the same as any other stale-suggestion drift per `rules.md`.
+
 ### 3.1 Backend
 | Layer | Technology |
 |---|---|
 | Language | Java 17 (LTS) |
-| Framework | Spring Boot 3.x |
+| Framework | Spring Boot 4.1.x (on Spring Framework 7.0.x) |
 | Web layer | Spring MVC (Controllers) via `DispatcherServlet` |
 | View layer | Thymeleaf (`spring-boot-starter-thymeleaf`, auto-configured `ThymeleafViewResolver`) |
 | Data access | Spring Data JPA + Hibernate |

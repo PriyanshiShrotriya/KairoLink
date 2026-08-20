@@ -10,4 +10,5 @@
   - `phases.md` — Phase 0 (Thymeleaf template + DevTools setup instead of JSP config), Phase 6 (templates instead of JSPs), Phase 8 (JAR + Docker + Render/Railway/Fly.io deployment instead of WAR + external Tomcat).
   - `design.md` — replaced JSP references with Thymeleaf in usage-principle notes and font-loading instructions.
   - `requirements.md` — constraints section updated to say Thymeleaf instead of JSP/Servlets.
-  - Everything else (Spring Boot, Spring MVC, Spring Data JPA, Spring Security, Maven, MySQL/PostgreSQL, Bootstrap 5, vanilla JS, layered architecture, entity/DTO structure) is unchanged.
+
+- 2026-08-20 (c): **Bumped Spring Boot from 3.x to 4.1.x** (on Spring Framework 7.0.x), since Spring Boot 3.5 reached open-source EOL on June 30, 2026, and Spring Initializr no longer offers 3.x. Updated `architecture.md` (tech stack table + new "A Note on Spring Boot 4" section covering Jackson 3, JUnit 5-only, dropped Undertow, Java 17 baseline retained) and `rules.md` (locked stack version). No other doc pinned a Spring Boot version, so no further changes needed. Thymeleaf/JPA/Security/Lombok choices are unaffected — all have Boot-4-compatible versions.

@@ -7,7 +7,7 @@ Ground rules to keep the project consistent, working, and not a mess of AI-gener
 ## What to Use
 
 ### Core Stack (locked — don't deviate)
-- **Java 17**, **Spring Boot 3.x**
+- **Java 17**, **Spring Boot 4.1.x** (on Spring Framework 7.0.x)
 - **Spring MVC** for controllers, **Thymeleaf** for views (`spring-boot-starter-thymeleaf`, auto-configured view resolver)
 - **Spring Data JPA + Hibernate** for all DB access — no raw JDBC unless there's a specific reason
 - **Spring Security** for auth — no custom-rolled auth/session handling (use `thymeleaf-extras-springsecurity6` for role checks in templates)
