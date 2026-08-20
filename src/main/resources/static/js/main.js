@@ -1,0 +1,1 @@
+console.log("KairoLink JavaScript loaded successfully.");
