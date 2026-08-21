@@ -160,10 +160,6 @@ KairoLink packages as a single self-contained JAR (embedded Tomcat), so deployme
 * **Render / Railway / Fly.io** — all support "deploy a Spring Boot app" directly from a GitHub repo or via the Dockerfile, with free/low-cost tiers.
 * Set `application-prod.properties` (or environment variables) for the production DB connection before deploying — see `phases.md` Phase 8.
 
-### Vibe Coding This Project
-
-This project is being built with **VS Code + GitHub Copilot** as an AI pair-programmer. Before starting a session, see `rules.md` for the ground rules (locked tech stack, what Copilot is and isn't allowed to touch) and `architecture.md` for the folder structure and layering Copilot should follow.
-
 ---
 
 ## 🔮 Future Enhancements
