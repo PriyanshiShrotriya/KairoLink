@@ -12,3 +12,4 @@
   - `requirements.md` — constraints section updated to say Thymeleaf instead of JSP/Servlets.
 
 - 2026-08-20 (c): **Bumped Spring Boot from 3.x to 4.1.x** (on Spring Framework 7.0.x), since Spring Boot 3.5 reached open-source EOL on June 30, 2026, and Spring Initializr no longer offers 3.x. Updated `architecture.md` (tech stack table + new "A Note on Spring Boot 4" section covering Jackson 3, JUnit 5-only, dropped Undertow, Java 17 baseline retained) and `rules.md` (locked stack version). No other doc pinned a Spring Boot version, so no further changes needed. Thymeleaf/JPA/Security/Lombok choices are unaffected — all have Boot-4-compatible versions.
+- 2026-08-20 (d): **Completed Phase - 0 ** , successfully established project foundation along with project structure. Presentation layer , logic and database layer are all in sync.
