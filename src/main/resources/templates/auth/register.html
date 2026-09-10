@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create your KairoLink account</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/auth.css}">
+</head>
+<body class="auth-page">
+<main class="auth-shell">
+    <section class="auth-brand-panel" aria-labelledby="brand-heading">
+        <a class="auth-brand" th:href="@{/}" aria-label="KairoLink home">KairoLink</a>
+        <div class="auth-brand-content">
+            <p class="auth-eyebrow">Move together</p>
+            <h1 id="brand-heading">Your next ride starts here.</h1>
+            <p class="auth-brand-copy">
+                Join a community that makes everyday journeys simpler, friendlier, and more connected.
+            </p>
+            <div class="auth-route-mark" aria-hidden="true">
+                <span class="auth-route-dot"></span>
+                <span class="auth-route-line"></span>
+                <span class="auth-route-dot auth-route-dot--accent"></span>
+            </div>
+            <p class="auth-brand-note">Share the road. Find your way.</p>
+        </div>
+        <p class="auth-brand-footer">A calmer way to commute.</p>
+    </section>
+
+    <section class="auth-form-panel" aria-labelledby="registration-heading">
+        <div class="auth-form-card">
+            <div class="auth-form-heading">
+                <p class="auth-eyebrow">Welcome to KairoLink</p>
+                <h2 id="registration-heading">Create your account</h2>
+                <p>Choose how you want to get moving with us.</p>
+            </div>
+
+            <div class="auth-alert auth-alert--success"
+                 th:if="${param.success}"
+                 role="status">
+                Your account was created successfully. You can now sign in.
+            </div>
+
+            <form class="auth-form"
+                  th:action="@{/register}"
+                  th:object="${registrationRequest}"
+                  method="post">
+                <div class="auth-alert auth-alert--error"
+                     th:if="${#fields.hasGlobalErrors()}"
+                     role="alert">
+                    <p th:each="error : ${#fields.globalErrors()}"
+                       th:text="${error.defaultMessage}"></p>
+                </div>
+
+                <div class="auth-field">
+                    <label for="name">Full name</label>
+                    <input id="name"
+                           type="text"
+                           th:field="*{name}"
+                           autocomplete="name"
+                           maxlength="100"
+                           required>
+                    <p class="auth-field-error"
+                       th:if="${#fields.hasErrors('name')}"
+                       th:errors="*{name}"></p>
+                </div>
+
+                <div class="auth-field">
+                    <label for="email">Email address</label>
+                    <input id="email"
+                           type="email"
+                           th:field="*{email}"
+                           autocomplete="email"
+                           maxlength="255"
+                           required>
+                    <p class="auth-field-error"
+                       th:if="${#fields.hasErrors('email')}"
+                       th:errors="*{email}"></p>
+                </div>
+
+                <div class="auth-field">
+                    <label for="phone">
+                        Phone number
+                        <span class="auth-optional">(optional)</span>
+                    </label>
+                    <input id="phone"
+                           type="tel"
+                           th:field="*{phone}"
+                           autocomplete="tel"
+                           maxlength="30">
+                    <p class="auth-field-error"
+                       th:if="${#fields.hasErrors('phone')}"
+                       th:errors="*{phone}"></p>
+                </div>
+
+                <div class="auth-field-row">
+                    <div class="auth-field">
+                        <label for="password">Password</label>
+                        <input id="password"
+                               name="password"
+                               type="password"
+                               autocomplete="new-password"
+                               required>
+                        <p class="auth-field-error"
+                           th:if="${#fields.hasErrors('password')}"
+                           th:errors="*{password}"></p>
+                    </div>
+
+                    <div class="auth-field">
+                        <label for="confirmPassword">Confirm password</label>
+                        <input id="confirmPassword"
+                               name="confirmPassword"
+                               type="password"
+                               autocomplete="new-password"
+                               required>
+                        <p class="auth-field-error"
+                           th:if="${#fields.hasErrors('confirmPassword')}"
+                           th:errors="*{confirmPassword}"></p>
+                    </div>
+                </div>
+
+                <fieldset class="auth-role-group">
+                    <legend>How will you use KairoLink?</legend>
+                    <div class="auth-role-options">
+                        <label class="auth-role-option">
+                            <input type="radio"
+                                   th:field="*{role}"
+                                   value="RIDER"
+                                   required>
+                            <span>
+                                <strong>Ride with others</strong>
+                                <small>Find a seat on your commute.</small>
+                            </span>
+                        </label>
+                        <label class="auth-role-option">
+                            <input type="radio"
+                                   th:field="*{role}"
+                                   value="DRIVER">
+                            <span>
+                                <strong>Offer a ride</strong>
+                                <small>Share your journey and a seat.</small>
+                            </span>
+                        </label>
+                    </div>
+                    <p class="auth-field-error"
+                       th:if="${#fields.hasErrors('role')}"
+                       th:errors="*{role}"></p>
+                </fieldset>
+
+                <button class="auth-submit" type="submit">Create account</button>
+            </form>
+
+            <p class="auth-form-footer">
+                Already have an account?
+                <a th:href="@{/login}">Sign in</a>
+            </p>
+        </div>
+    </section>
+</main>
+</body>
+</html>

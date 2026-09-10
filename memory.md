@@ -12,4 +12,95 @@
   - `requirements.md` — constraints section updated to say Thymeleaf instead of JSP/Servlets.
 
 - 2026-08-20 (c): **Bumped Spring Boot from 3.x to 4.1.x** (on Spring Framework 7.0.x), since Spring Boot 3.5 reached open-source EOL on June 30, 2026, and Spring Initializr no longer offers 3.x. Updated `architecture.md` (tech stack table + new "A Note on Spring Boot 4" section covering Jackson 3, JUnit 5-only, dropped Undertow, Java 17 baseline retained) and `rules.md` (locked stack version). No other doc pinned a Spring Boot version, so no further changes needed. Thymeleaf/JPA/Security/Lombok choices are unaffected — all have Boot-4-compatible versions.
+
 - 2026-08-20 (d): **Completed Phase - 0 ** , successfully established project foundation along with project structure. Presentation layer , logic and database layer are all in sync.
+
+- 2026-09-08 (e): ## Current Branch
+`feature/user-registration`
+
+## Completed: User Registration
+
+The complete user registration feature is implemented and tested.
+
+### Backend
+- Created `User` entity and `Role` enum.
+- Added `UserRepository`.
+- Added Flyway database migration for `users` and `user_roles`.
+- Configured PostgreSQL/Supabase with Flyway.
+- Changed Hibernate schema handling to `ddl-auto=validate`.
+- Added BCrypt password hashing using `PasswordEncoder`.
+- Created `RegistrationRequest` DTO.
+- Created `UserRegistrationService`.
+- Added validation for:
+  - Password confirmation
+  - Minimum password length of 8 characters
+  - BCrypt 72-byte password limit
+  - Duplicate email
+  - Public role restrictions
+- Only `RIDER` and `DRIVER` can register publicly.
+- `ADMIN` registration is rejected.
+- Email is normalized using trim + lowercase.
+- Phone is trimmed; empty/blank values become `null`.
+- Database unique constraint remains the final protection against concurrent duplicate registrations.
+- Added `DuplicateEmailException` and `InvalidRegistrationException`.
+- Registration runs inside a transaction.
+
+### Controller
+- Created `AuthController`.
+- Implemented:
+  - `GET /register`
+  - `POST /register`
+- Uses `@Valid` and `BindingResult`.
+- Handles duplicate email and invalid registration errors.
+- Clears password fields when returning the form after errors.
+- Successful registration redirects to `/register?success`.
+
+### Frontend
+- Created `templates/auth/register.html`.
+- Created `static/css/auth.css`.
+- Registration page uses a responsive split-layout inspired by the Figma design.
+- Includes validation errors and success feedback.
+- Only RIDER and DRIVER roles are shown.
+- Password values are never redisplayed.
+
+### Testing
+- Added mock-based `UserRegistrationServiceTest`.
+- Added `AuthControllerTest`.
+- Added one controlled `RegistrationEndToEndTest`.
+- Added test-scoped H2 database configuration.
+- Tests use an isolated H2 in-memory database and do not contact Supabase.
+- Full test suite last verified successfully:
+
+  **21 tests passed, 0 failures, 0 errors.**
+
+## Important Architecture Decisions
+- Keep code production-ready but avoid unnecessary abstractions.
+- Do not add interfaces, factories, mappers, or helpers unless genuinely needed.
+- Use layered architecture: Controller → Service → Repository → Database.
+- Flyway manages database schema changes.
+- Hibernate uses schema validation, not automatic schema updates.
+- Production database is PostgreSQL/Supabase.
+- Tests must use isolated infrastructure and must not modify production data.
+
+## Next Task
+User registration is complete.
+
+Next major Phase 1 task: **Login / Authentication**.
+
+Before implementing login:
+1. Read `architecture.md`.
+2. Read `phases.md`.
+3. Read `requirements.md`.
+4. Read `rules.md`.
+5. Inspect the current authentication-related code and dependencies.
+
+Do not assume whether authentication should use JWT or Spring Security sessions until the project requirements and architecture are checked.
+
+## Development Preference
+The project should be built as a real-world deployable application:
+- Not unnecessarily bulky.
+- Not oversimplified.
+- Changes should stay within the approved scope.
+- Inspect existing code before modifying files.
+- Prefer focused implementation plans.
+- Run appropriate tests after implementation.
