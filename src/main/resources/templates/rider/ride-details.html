@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/header :: header}"></head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+<main class="container">
+    <h1>Ride details</h1>
+    <p><strong>Route:</strong>
+        <span th:text="${ride.source + ' to ' + ride.destination}"></span></p>
+    <p><strong>Driver:</strong> <span th:text="${ride.driverName}"></span></p>
+    <p><strong>Departure:</strong> <span th:text="${ride.departureTime}"></span></p>
+    <p><strong>Available seats:</strong> <span th:text="${ride.availableSeats}"></span></p>
+    <p><strong>Price:</strong> <span th:text="${ride.price}"></span></p>
+    <p><strong>Vehicle:</strong>
+        <span th:text="${ride.vehicleDescription ?: 'Not provided'}"></span></p>
+    <p><strong>Rating:</strong> Not available yet</p>
+    <form th:action="@{/bookings}" method="post">
+        <input type="hidden" name="rideId" th:value="${ride.rideId}">
+        <button type="submit">Request a seat</button>
+    </form>
+</main>
+<div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

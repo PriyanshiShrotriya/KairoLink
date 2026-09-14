@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/header :: header}"></head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+<main class="container">
+    <h1>My bookings</h1>
+    <p th:if="${param.requested}">Booking request submitted.</p>
+    <p th:if="${#lists.isEmpty(bookings)}">You have no bookings yet.</p>
+    <article th:each="booking : ${bookings}">
+        <p>Booking #<span th:text="${booking.id}"></span></p>
+        <p>Ride #<span th:text="${booking.rideId}"></span></p>
+        <p>Status: <span th:text="${booking.status}"></span></p>
+        <a th:href="@{/bookings/{id}(id=${booking.id})}">View booking</a>
+    </article>
+</main>
+<div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

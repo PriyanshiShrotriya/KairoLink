@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/header :: header}"></head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+<main class="container">
+    <h1>Booking details</h1>
+    <p>Booking #<span th:text="${booking.id}"></span></p>
+    <p>Ride #<span th:text="${booking.rideId}"></span></p>
+    <p>Status: <span th:text="${booking.status}"></span></p>
+    <form th:if="${booking.status.name() == 'PENDING'}"
+          th:action="@{/bookings/{id}/cancel(id=${booking.id})}" method="post">
+        <button type="submit">Cancel request</button>
+    </form>
+</main>
+<div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

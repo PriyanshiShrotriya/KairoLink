@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/header :: header}"></head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+<main class="container">
+    <h1>Find your ride</h1>
+    <form th:action="@{/rider/search/results}"
+          th:object="${searchRequest}" method="get">
+        <label for="source">Source</label>
+        <input id="source" type="text" th:field="*{source}" required>
+        <p th:if="${#fields.hasErrors('source')}" th:errors="*{source}"></p>
+
+        <label for="destination">Destination</label>
+        <input id="destination" type="text" th:field="*{destination}" required>
+        <p th:if="${#fields.hasErrors('destination')}" th:errors="*{destination}"></p>
+
+        <label for="date">Date</label>
+        <input id="date" type="date" th:field="*{date}" required>
+        <p th:if="${#fields.hasErrors('date')}" th:errors="*{date}"></p>
+
+        <button type="submit">Search rides</button>
+    </form>
+</main>
+<div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

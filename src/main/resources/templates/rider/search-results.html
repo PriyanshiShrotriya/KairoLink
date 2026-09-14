@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/header :: header}"></head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+<main class="container">
+    <h1>Available rides</h1>
+    <p th:if="${#lists.isEmpty(rides)}">No bookable rides matched your search.</p>
+    <article th:each="ride : ${rides}">
+        <h2 th:text="${ride.source + ' to ' + ride.destination}"></h2>
+        <p>Driver: <span th:text="${ride.driverName}"></span></p>
+        <p>Departure: <span th:text="${ride.departureTime}"></span></p>
+        <p>Available seats: <span th:text="${ride.availableSeats}"></span></p>
+        <p>Price: <span th:text="${ride.price}"></span></p>
+        <a th:href="@{/rider/rides/{id}(id=${ride.rideId})}">View details</a>
+    </article>
+</main>
+<div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>
