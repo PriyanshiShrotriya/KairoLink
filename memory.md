@@ -104,3 +104,18 @@ The project should be built as a real-world deployable application:
 - Inspect existing code before modifying files.
 - Prefer focused implementation plans.
 - Run appropriate tests after implementation.
+
+- 2026-09-16 (f): **Completed Phase 1 Steps 1–6 and verified Phase 1**
+  - Step 1: Spring Security foundation with session-based authentication, public routes, protected routes, CSRF, and deliberate logout behavior.
+  - Step 2: Database-backed authentication using normalized email lookup, BCrypt hashes, enabled-state checks, and RIDER/DRIVER/ADMIN authority mapping.
+  - Step 3: Custom login page, successful and failed login behavior, logout flow, and authentication-aware navigation.
+  - Step 4: Role-based Rider, Driver, and Admin dashboard shells with cross-role authorization.
+  - Step 5: Authenticated profile view/edit for name, phone, and profile photo reference. Email remains read-only and security-sensitive fields are preserved.
+  - Step 6: Driver-only one-vehicle management with add/view/edit flows, a unique vehicle-per-driver constraint, server/database validation, and text-only photo references.
+  - Step 7: Password reset is intentionally deferred because it is optional in Phase 1. Email OTP verification and email delivery are also deferred.
+  - Step 8: Final verification completed on 2026-09-16. The full Maven test suite passed, `git diff --check` passed, Flyway migrations V1 and V2 validated against the isolated H2 test database, and no production database configuration was used by tests.
+
+### Phase 1 Status
+- Completed: registration, session authentication, database-backed login, logout, role-based dashboards, profile management, and driver vehicle management.
+- Deferred: optional password reset, email/OTP verification, and email delivery.
+- Not implemented: ride, booking, payment, rating, notification, passenger, and admin-management functionality; these belong to later phases.
