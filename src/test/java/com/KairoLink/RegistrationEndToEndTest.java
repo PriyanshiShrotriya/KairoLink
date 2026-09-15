@@ -17,6 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -37,6 +38,7 @@ class RegistrationEndToEndTest {
         String rawPassword = "ValidPass1";
 
         mockMvc.perform(post("/register")
+                        .with(csrf())
                         .param("name", "Priya Shrotriya")
                 .param("email", "Rider.Integration@example.com")
                         .param("phone", "  9876543210  ")
