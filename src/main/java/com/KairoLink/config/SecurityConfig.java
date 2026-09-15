@@ -20,6 +20,7 @@ public class SecurityConfig {
                         .requestMatchers("/dashboard/rider").hasRole("RIDER")
                         .requestMatchers("/dashboard/driver").hasRole("DRIVER")
                         .requestMatchers("/dashboard/admin").hasRole("ADMIN")
+                        .requestMatchers("/vehicle/**").hasRole("DRIVER")
                         .anyRequest().authenticated())
                 .userDetailsService(userDetailsService)
                 .formLogin(form -> form

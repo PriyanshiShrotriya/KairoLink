@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/header :: header}">
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<main class="container">
+    <section class="hero">
+        <h1>Your vehicle</h1>
+        <p th:if="${param.updated}" role="status">Your vehicle was saved successfully.</p>
+    </section>
+
+    <section th:if="${vehicle != null}">
+        <p><strong>Model:</strong> <span th:text="${vehicle.model}"></span></p>
+        <p><strong>Number plate:</strong> <span th:text="${vehicle.numberPlate}"></span></p>
+        <p><strong>Seats:</strong> <span th:text="${vehicle.seats}"></span></p>
+        <p><strong>Photo reference:</strong>
+            <span th:text="${vehicle.photoReference ?: 'Not provided'}"></span>
+        </p>
+        <p><a th:href="@{/vehicle/edit}">Edit vehicle</a></p>
+    </section>
+
+    <section th:if="${vehicle == null}">
+        <p>You have not added a vehicle yet.</p>
+        <p><a th:href="@{/vehicle/edit}">Add vehicle</a></p>
+    </section>
+</main>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>
