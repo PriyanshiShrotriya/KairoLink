@@ -17,11 +17,14 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/", "/register", "/css/**", "/js/**", "/images/**",
                                 "/webjars/**", "/favicon.ico", "/login").permitAll()
+                        .requestMatchers("/dashboard/rider").hasRole("RIDER")
+                        .requestMatchers("/dashboard/driver").hasRole("DRIVER")
+                        .requestMatchers("/dashboard/admin").hasRole("ADMIN")
                         .anyRequest().authenticated())
                 .userDetailsService(userDetailsService)
                 .formLogin(form -> form
                         .loginPage("/login")
-                        .defaultSuccessUrl("/", true)
+                        .defaultSuccessUrl("/dashboard", true)
                         .failureUrl("/login?error")
                         .permitAll())
                 .logout(logout -> logout

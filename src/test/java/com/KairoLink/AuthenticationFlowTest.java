@@ -49,7 +49,7 @@ class AuthenticationFlowTest {
 
     @Test
     @Transactional
-    void successfulAuthenticationRedirectsToHomeAndCreatesSession() throws Exception {
+    void successfulAuthenticationRedirectsToDashboardAndCreatesSession() throws Exception {
         saveUser(true);
 
         MvcResult result = mockMvc.perform(post("/login")
@@ -57,7 +57,7 @@ class AuthenticationFlowTest {
                         .param("username", "  LOGIN@EXAMPLE.COM ")
                         .param("password", PASSWORD))
                 .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/"))
+        .andExpect(redirectedUrl("/dashboard"))
                 .andReturn();
 
         SecurityContext securityContext = (SecurityContext) result.getRequest()
