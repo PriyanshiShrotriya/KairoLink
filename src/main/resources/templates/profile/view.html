@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/header :: header}">
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<main class="container">
+    <section class="hero">
+        <h1>Your profile</h1>
+        <p th:if="${param.updated}" role="status">Your profile was updated successfully.</p>
+    </section>
+
+    <section>
+        <p><strong>Name:</strong> <span th:text="${profile.name}"></span></p>
+        <p><strong>Email:</strong> <span th:text="${profile.email}"></span></p>
+        <p><strong>Phone:</strong> <span th:text="${profile.phone ?: 'Not provided'}"></span></p>
+        <p><strong>Profile photo reference:</strong>
+            <span th:text="${profile.profilePhotoReference ?: 'Not provided'}"></span>
+        </p>
+        <p><strong>Roles:</strong> <span th:text="${profile.roles}"></span></p>
+        <p><a th:href="@{/profile/edit}">Edit profile</a></p>
+    </section>
+</main>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

@@ -11,6 +11,7 @@
         <div class="nav-links">
             <a th:href="@{/}">Home</a>
             <a sec:authorize="isAuthenticated()" th:href="@{/dashboard}">Dashboard</a>
+            <a sec:authorize="isAuthenticated()" th:href="@{/profile}">Profile</a>
             <a sec:authorize="isAnonymous()" th:href="@{/login}">Sign in</a>
             <a sec:authorize="isAnonymous()" th:href="@{/register}">Register</a>
             <form sec:authorize="isAuthenticated()"
