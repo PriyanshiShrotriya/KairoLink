@@ -1,9 +1,7 @@
 package com.KairoLink.config;
 
-import com.KairoLink.service.DatabaseUserDetailsService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.SecurityFilterChain;
@@ -18,15 +16,20 @@ public class SecurityConfig {
         http
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/", "/register", "/css/**", "/js/**", "/images/**",
-                                "/webjars/**", "/favicon.ico").permitAll()
+                                "/webjars/**", "/favicon.ico", "/login").permitAll()
                         .anyRequest().authenticated())
-                .csrf(Customizer.withDefaults())
                 .userDetailsService(userDetailsService)
-                .formLogin(Customizer.withDefaults())
+                .formLogin(form -> form
+                        .loginPage("/login")
+                        .defaultSuccessUrl("/", true)
+                        .failureUrl("/login?error")
+                        .permitAll())
                 .logout(logout -> logout
+                        .logoutUrl("/logout")
                         .invalidateHttpSession(true)
                         .clearAuthentication(true)
-                        .logoutSuccessUrl("/"));
+                        .logoutSuccessUrl("/")
+                        .permitAll());
 
         return http.build();
     }

@@ -1,4 +1,6 @@
-<nav th:fragment="navbar" xmlns:th="http://www.thymeleaf.org">
+<nav th:fragment="navbar"
+     xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+     xmlns:th="http://www.thymeleaf.org">
 
     <div class="navbar">
 
@@ -8,6 +10,16 @@
 
         <div class="nav-links">
             <a th:href="@{/}">Home</a>
+            <a sec:authorize="isAnonymous()" th:href="@{/login}">Sign in</a>
+            <a sec:authorize="isAnonymous()" th:href="@{/register}">Register</a>
+            <form sec:authorize="isAuthenticated()"
+                  th:action="@{/logout}"
+                  method="post">
+                <input type="hidden"
+                       th:name="${_csrf.parameterName}"
+                       th:value="${_csrf.token}">
+                <button type="submit">Sign out</button>
+            </form>
         </div>
 
     </div>
