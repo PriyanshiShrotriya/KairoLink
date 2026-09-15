@@ -49,7 +49,7 @@ public class User {
     @Column(name = "password_hash", nullable = false)
     private String passwordHash;
 
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @Enumerated(EnumType.STRING)
     @CollectionTable(
             name = "user_roles",
