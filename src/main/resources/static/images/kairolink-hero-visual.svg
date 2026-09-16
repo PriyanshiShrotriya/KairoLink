@@ -1,0 +1,109 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 640" role="img" aria-labelledby="title desc">
+  <title id="title">Verified campus carpool route</title>
+  <desc id="desc">A modern carpool vehicle follows an amber route between two campus locations, with passengers and trust indicators.</desc>
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0b162b"/>
+      <stop offset="1" stop-color="#1d3155"/>
+    </linearGradient>
+    <linearGradient id="ground" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#293d62"/>
+      <stop offset="1" stop-color="#14243f"/>
+    </linearGradient>
+    <linearGradient id="road" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#101d33"/>
+      <stop offset="1" stop-color="#263b5f"/>
+    </linearGradient>
+    <linearGradient id="car" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#dfe9f5"/>
+      <stop offset="1" stop-color="#8fa8c9"/>
+    </linearGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="180%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="9"/>
+      <feOffset dy="8"/>
+      <feComponentTransfer><feFuncA type="linear" slope=".32"/></feComponentTransfer>
+      <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="soft" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="18"/>
+    </filter>
+  </defs>
+
+  <rect width="960" height="640" fill="url(#sky)"/>
+  <circle cx="760" cy="126" r="100" fill="#38547d" opacity=".18" filter="url(#soft)"/>
+  <g fill="#c9d7e9" opacity=".6">
+    <circle cx="120" cy="108" r="2"/><circle cx="204" cy="73" r="2"/><circle cx="330" cy="134" r="2"/>
+    <circle cx="640" cy="74" r="2"/><circle cx="832" cy="178" r="2"/><circle cx="885" cy="91" r="2"/>
+  </g>
+
+  <path d="M0 326h960v314H0z" fill="url(#ground)"/>
+  <path d="M0 326h960" stroke="#7183a0" stroke-opacity=".28"/>
+
+  <g fill="#172946">
+    <path d="M0 235h54v91H0zM64 207h66v119H64zM143 258h49v68h-49zM203 184h75v142h-75zM291 231h45v95h-45z"/>
+    <path d="M624 247h52v79h-52zM687 202h78v124h-78zM778 226h45v100h-45zM836 175h67v151h-67zM916 240h44v86h-44z"/>
+  </g>
+  <g fill="#f2a93b" opacity=".8">
+    <path d="M80 228h8v10h-8zM107 228h8v10h-8zM218 208h9v11h-9zM250 208h9v11h-9zM218 239h9v11h-9z"/>
+    <path d="M708 224h9v11h-9zM739 224h9v11h-9zM858 200h9v11h-9zM889 200h9v11h-9zM858 231h9v11h-9z"/>
+  </g>
+
+  <path d="M0 640h960L704 354H268z" fill="url(#road)"/>
+  <path d="M130 640l230-286M830 640L610 354" stroke="#415a82" stroke-width="3" opacity=".55"/>
+  <path d="M480 640L486 575M486 548l4-48M491 468l3-34" stroke="#f2a93b" stroke-width="4" stroke-dasharray="18 22" opacity=".75"/>
+
+  <path d="M174 531C292 449 347 427 447 393C555 356 641 315 750 238" fill="none" stroke="#f2a93b" stroke-width="5" opacity=".24"/>
+  <path d="M174 531C292 449 347 427 447 393C555 356 641 315 750 238" fill="none" stroke="#f2a93b" stroke-width="2"/>
+  <circle cx="447" cy="393" r="7" fill="#f2a93b"/><circle cx="447" cy="393" r="15" fill="none" stroke="#f2a93b" stroke-opacity=".35"/>
+
+  <g filter="url(#shadow)">
+    <path d="M99 188h142v66H99z" rx="12" fill="#eef4f8"/>
+    <circle cx="124" cy="220" r="14" fill="#d9f0e9"/>
+    <path d="M117 220l5 5 10-12" fill="none" stroke="#2e8b74" stroke-width="3"/>
+    <text x="148" y="218" fill="#1b2a4a" font-family="Arial,sans-serif" font-size="16" font-weight="700">Verified</text>
+    <text x="148" y="238" fill="#5c6270" font-family="Arial,sans-serif" font-size="12">NIET community</text>
+  </g>
+
+  <g filter="url(#shadow)">
+    <path d="M736 106h144v66H736z" rx="12" fill="#eef4f8"/>
+    <path d="M761 130l5-10 5 10 11 1-8 8 3 11-11-6-10 6 3-11-8-8z" fill="#f2a93b"/>
+    <text x="795" y="135" fill="#1b2a4a" font-family="Arial,sans-serif" font-size="16" font-weight="700">4.8</text>
+    <text x="795" y="153" fill="#5c6270" font-family="Arial,sans-serif" font-size="12">Rating</text>
+  </g>
+
+  <g filter="url(#shadow)">
+    <path d="M720 478h155v66H720z" rx="12" fill="#eef4f8"/>
+    <circle cx="747" cy="511" r="14" fill="#e3eaf3"/>
+    <circle cx="743" cy="508" r="4" fill="#2e4272"/><circle cx="751" cy="508" r="4" fill="#2e4272"/>
+    <path d="M740 517q7 8 14 0" fill="none" stroke="#2e4272" stroke-width="2"/>
+    <text x="772" y="509" fill="#1b2a4a" font-family="Arial,sans-serif" font-size="15" font-weight="700">2 Seats</text>
+    <text x="772" y="528" fill="#5c6270" font-family="Arial,sans-serif" font-size="12">Available</text>
+  </g>
+
+  <g filter="url(#shadow)">
+    <ellipse cx="485" cy="494" rx="125" ry="25" fill="#081426" opacity=".65"/>
+    <path d="M375 460l28-56q10-18 32-18h102q22 0 35 19l34 55v40H375z" fill="url(#car)" stroke="#dfe9f5" stroke-width="3"/>
+    <path d="M421 399h104q14 0 23 13l17 27H402l17-33q1-4 2-7z" fill="#263c60"/>
+    <path d="M430 404h40v29h-57zM480 404h42l18 29h-60z" fill="#9dc1d8" opacity=".85"/>
+    <path d="M387 458h218" stroke="#f2a93b" stroke-width="5"/>
+    <circle cx="418" cy="499" r="25" fill="#101c31" stroke="#8da5c4" stroke-width="5"/>
+    <circle cx="418" cy="499" r="10" fill="#d7e1ed"/>
+    <circle cx="572" cy="499" r="25" fill="#101c31" stroke="#8da5c4" stroke-width="5"/>
+    <circle cx="572" cy="499" r="10" fill="#d7e1ed"/>
+    <path d="M396 470h17M578 470h17" stroke="#f2a93b" stroke-width="5" stroke-linecap="round"/>
+    <circle cx="468" cy="448" r="17" fill="#e8b79b"/><path d="M451 443q17-26 34 0v31h-34z" fill="#2e4272"/>
+    <circle cx="523" cy="448" r="17" fill="#c88e73"/><path d="M506 443q17-25 34 0v31h-34z" fill="#1b2a4a"/>
+  </g>
+
+  <g>
+    <path d="M738 214l12-19 12 19v20h-24z" fill="#f2a93b"/>
+    <circle cx="750" cy="188" r="16" fill="#f2a93b"/>
+    <path d="M750 181v14M743 188h14" stroke="#1b2a4a" stroke-width="3" stroke-linecap="round"/>
+    <path d="M716 238h68" stroke="#f2a93b" stroke-width="2" opacity=".6"/>
+  </g>
+  <g opacity=".9">
+    <path d="M204 392l10-17 10 17v15h-20z" fill="#2e8b74"/>
+    <circle cx="214" cy="368" r="13" fill="#2e8b74"/>
+    <circle cx="214" cy="368" r="5" fill="#d9f0e9"/>
+  </g>
+</svg>
