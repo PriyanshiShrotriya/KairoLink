@@ -5,24 +5,111 @@
 <head th:replace="~{fragments/header :: header}">
 </head>
 
-<body>
+<body class="landing-page">
 
     <div th:replace="~{fragments/navbar :: navbar}">
     </div>
 
-    <main class="container">
-
-        <section class="hero">
-
-            <h1>Hello KairoLink 🚗</h1>
-
-            <p>
-                Your Spring Boot + Thymeleaf application
-                is running successfully.
-            </p>
-
+    <main>
+        <section class="landing-hero">
+            <div class="landing-container landing-hero-grid">
+                <div class="landing-hero-copy">
+                    <p class="landing-eyebrow landing-eyebrow--dark">NIET Campus — Faculty &amp; Staff Only</p>
+                    <span class="landing-route-line" aria-hidden="true"></span>
+                    <h1>Your Campus.<br>Your Ride.<br><span>Your Community.</span></h1>
+                    <p class="landing-hero-description">
+                        Safe, verified and convenient carpooling built exclusively for NIET faculty and staff.
+                    </p>
+                    <div class="landing-actions">
+                        <a class="landing-button landing-button--primary" href="#find-a-ride">Find a Ride</a>
+                        <a class="landing-button landing-button--secondary-dark" href="#offer-a-ride">Offer a Ride</a>
+                    </div>
+                    <div class="landing-stats" aria-label="KairoLink statistics">
+                        <div>
+                            <strong>1,200+</strong>
+                            <span>Verified Faculty</span>
+                        </div>
+                        <div>
+                            <strong>18,000+</strong>
+                            <span>Rides Completed</span>
+                        </div>
+                        <div>
+                            <strong>4.9</strong>
+                            <span>Avg. Rating</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="landing-hero-visual">
+                    <img src="/images/kairolink-hero-visual.svg"
+                         alt="Illustration of a verified shared ride traveling between two campus locations">
+                </div>
+            </div>
         </section>
 
+        <section class="landing-section landing-process" id="how-it-works">
+            <div class="landing-container">
+                <div class="landing-section-heading">
+                    <span class="landing-route-line" aria-hidden="true"></span>
+                    <h2>How KairoLink Works</h2>
+                    <p>From your first search to your shared ride — in four simple steps.</p>
+                </div>
+                <div class="landing-process-grid">
+                    <article class="landing-process-step">
+                        <div class="landing-step-icon"><span>⌕</span><b>01</b></div>
+                        <h3>Find</h3>
+                        <p>Search for rides by route, date and time. Filter by verified drivers.</p>
+                    </article>
+                    <article class="landing-process-step">
+                        <div class="landing-step-icon"><span>♧</span><b>02</b></div>
+                        <h3>Connect</h3>
+                        <p>Review driver profiles, ratings and vehicle details before requesting.</p>
+                    </article>
+                    <article class="landing-process-step">
+                        <div class="landing-step-icon"><span>▱</span><b>03</b></div>
+                        <h3>Ride</h3>
+                        <p>Meet at the pickup point and enjoy a safe, shared journey.</p>
+                    </article>
+                    <article class="landing-process-step">
+                        <div class="landing-step-icon"><span>☆</span><b>04</b></div>
+                        <h3>Rate</h3>
+                        <p>Share feedback after each ride to keep the community trustworthy.</p>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <section class="landing-section landing-trust" id="safety">
+            <div class="landing-container landing-trust-grid">
+                <div class="landing-trust-copy">
+                    <span class="landing-route-line" aria-hidden="true"></span>
+                    <h2>Built Around Trust</h2>
+                    <p>Every rider and driver on KairoLink is a verified NIET faculty or staff member. We combine institutional verification with social accountability.</p>
+                    <a class="landing-text-link" href="#trust-features">Learn about our safety features <span aria-hidden="true">→</span></a>
+                </div>
+                <div class="landing-trust-cards" id="trust-features">
+                    <article><span class="trust-icon trust-icon--teal">♢</span><h3>Identity Verification</h3><p>Every user is verified within their NIET ID.</p></article>
+                    <article><span class="trust-icon trust-icon--indigo">▱</span><h3>Vehicle Verification</h3><p>Vehicles are registered and verified before any ride.</p></article>
+                    <article><span class="trust-icon trust-icon--amber">☆</span><h3>User Ratings</h3><p>Transparent ratings build a trusted community.</p></article>
+                    <article><span class="trust-icon trust-icon--teal">♧</span><h3>Live Location</h3><p>Share real-time location with trusted contacts.</p></article>
+                    <article><span class="trust-icon trust-icon--coral">⌁</span><h3>Emergency Contact</h3><p>One-tap emergency alert to your saved contacts.</p></article>
+                    <article><span class="trust-icon trust-icon--slate">△</span><h3>Report a User</h3><p>Quick reporting keeps the community accountable.</p></article>
+                </div>
+            </div>
+        </section>
+
+        <section class="landing-cta" id="find-a-ride">
+            <div class="landing-container landing-cta-content">
+                <span class="landing-route-line" aria-hidden="true"></span>
+                <h2>Ready for your next ride?</h2>
+                <p>Join NIET faculty carpooling today. Safe journeys, trusted colleagues.</p>
+                <div class="landing-actions">
+                    <a class="landing-button landing-button--primary" th:href="@{/register}">Create Account</a>
+                    <a class="landing-button landing-button--secondary-light" th:href="@{/login}">Sign In</a>
+                </div>
+            </div>
+        </section>
+
+        <span id="offer-a-ride" class="landing-anchor" aria-hidden="true"></span>
     </main>
 
     <div th:replace="~{fragments/footer :: footer}">
