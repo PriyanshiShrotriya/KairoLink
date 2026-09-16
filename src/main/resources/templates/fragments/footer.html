@@ -1,7 +1,39 @@
-<footer th:fragment="footer"
+<footer th:fragment="footer" class="site-footer"
         xmlns:th="http://www.thymeleaf.org">
-
-    <p>&copy; 2026 KairoLink. All rights reserved.</p>
+    <div class="landing-container footer-grid">
+        <div class="footer-brand">
+            <a class="brand" th:href="@{/}" aria-label="KairoLink home">
+                <span class="brand-mark" aria-hidden="true">⌁</span>
+                <span>KairoLink</span>
+            </a>
+            <p>Connecting people at the right time. Safe, verified carpooling for NIET faculty and staff.</p>
+        </div>
+        <div class="footer-column">
+            <h2>Product</h2>
+            <a href="/#find-a-ride">Find a Ride</a>
+            <a href="/#offer-a-ride">Offer a Ride</a>
+            <a href="/#how-it-works">How It Works</a>
+            <a href="/#find-a-ride">My Rides</a>
+        </div>
+        <div class="footer-column">
+            <h2>Safety</h2>
+            <a href="/#safety">Safety Center</a>
+            <a href="/#trust-features">Identity Verification</a>
+            <a href="/#safety">Emergency Contact</a>
+            <a href="/#safety">Report a User</a>
+        </div>
+        <div class="footer-column">
+            <h2>Institute</h2>
+            <a href="/#safety">About NIET</a>
+            <a href="/#safety">Campus Directions</a>
+            <a href="/#safety">Contact Us</a>
+            <a href="/#safety">Privacy Policy</a>
+        </div>
+    </div>
+    <div class="landing-container footer-bottom">
+        <p>&copy; 2026 KairoLink — NIET Carpooling Platform. All rights reserved.</p>
+        <span>v1.0.0</span>
+    </div>
 
     <script th:src="@{/js/main.js}"></script>
 

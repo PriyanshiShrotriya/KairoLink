@@ -4,23 +4,37 @@
 
     <div class="navbar">
 
-        <a class="brand" th:href="@{/}">
-            KairoLink
+        <a class="brand" th:href="@{/}" aria-label="KairoLink home">
+            <span class="brand-mark" aria-hidden="true">⌁</span>
+            <span>KairoLink</span>
         </a>
+
+        <input class="nav-menu-toggle" type="checkbox" id="nav-menu-toggle">
+        <label class="nav-menu-button" for="nav-menu-toggle">
+            <span class="visually-hidden">Toggle navigation menu</span>
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+        </label>
 
         <div class="nav-links">
             <a th:href="@{/}">Home</a>
+            <a href="/#find-a-ride">Find a Ride</a>
+            <a href="/#offer-a-ride">Offer a Ride</a>
+            <a href="/#how-it-works">How It Works</a>
+            <a href="/#safety">Safety</a>
+            <a href="/#safety">About</a>
             <a sec:authorize="isAuthenticated()" th:href="@{/dashboard}">Dashboard</a>
             <a sec:authorize="isAuthenticated()" th:href="@{/profile}">Profile</a>
-            <a sec:authorize="isAnonymous()" th:href="@{/login}">Sign in</a>
-            <a sec:authorize="isAnonymous()" th:href="@{/register}">Register</a>
+            <a class="nav-sign-in" sec:authorize="isAnonymous()" th:href="@{/login}">Sign In</a>
+            <a class="nav-sign-up" sec:authorize="isAnonymous()" th:href="@{/register}">Sign Up</a>
             <form sec:authorize="isAuthenticated()"
                   th:action="@{/logout}"
                   method="post">
                 <input type="hidden"
                        th:name="${_csrf.parameterName}"
                        th:value="${_csrf.token}">
-                <button type="submit">Sign out</button>
+                <button type="submit">Sign Out</button>
             </form>
         </div>
 
