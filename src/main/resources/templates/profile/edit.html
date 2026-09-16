@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/header :: header}">
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<main class="container">
+    <section class="hero">
+        <h1>Edit your profile</h1>
+    </section>
+
+    <form th:action="@{/profile}"
+          th:object="${profileUpdateRequest}"
+          method="post">
+        <input type="hidden"
+               th:name="${_csrf.parameterName}"
+               th:value="${_csrf.token}">
+
+        <p><strong>Email:</strong> <span th:text="${profile.email}"></span></p>
+
+        <div>
+            <label for="name">Name</label>
+            <input id="name" type="text" th:field="*{name}" maxlength="100" required>
+            <p th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></p>
+        </div>
+
+        <div>
+            <label for="phone">Phone</label>
+            <input id="phone" type="tel" th:field="*{phone}" maxlength="30">
+            <p th:if="${#fields.hasErrors('phone')}" th:errors="*{phone}"></p>
+        </div>
+
+        <div>
+            <label for="profilePhotoReference">Profile photo reference</label>
+            <input id="profilePhotoReference"
+                   type="text"
+                   th:field="*{profilePhotoReference}"
+                   maxlength="255">
+            <p th:if="${#fields.hasErrors('profilePhotoReference')}"
+               th:errors="*{profilePhotoReference}"></p>
+        </div>
+
+        <button type="submit">Save changes</button>
+    </form>
+
+    <p><a th:href="@{/profile}">Cancel</a></p>
+</main>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/header :: header}">
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<main class="container">
+    <section class="hero">
+        <h1>Manage your vehicle</h1>
+    </section>
+
+    <form th:action="@{/vehicle}"
+          th:object="${vehicleRequest}"
+          method="post">
+        <input type="hidden"
+               th:name="${_csrf.parameterName}"
+               th:value="${_csrf.token}">
+
+        <div>
+            <label for="model">Model</label>
+            <input id="model" type="text" th:field="*{model}" maxlength="100" required>
+            <p th:if="${#fields.hasErrors('model')}" th:errors="*{model}"></p>
+        </div>
+
+        <div>
+            <label for="numberPlate">Number plate</label>
+            <input id="numberPlate" type="text" th:field="*{numberPlate}" maxlength="30" required>
+            <p th:if="${#fields.hasErrors('numberPlate')}" th:errors="*{numberPlate}"></p>
+        </div>
+
+        <div>
+            <label for="seats">Seats</label>
+            <input id="seats" type="number" th:field="*{seats}" min="1" required>
+            <p th:if="${#fields.hasErrors('seats')}" th:errors="*{seats}"></p>
+        </div>
+
+        <div>
+            <label for="photoReference">Photo reference</label>
+            <input id="photoReference" type="text" th:field="*{photoReference}" maxlength="255">
+            <p th:if="${#fields.hasErrors('photoReference')}" th:errors="*{photoReference}"></p>
+        </div>
+
+        <button type="submit">Save vehicle</button>
+    </form>
+
+    <p><a th:href="@{/vehicle}">Cancel</a></p>
+</main>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

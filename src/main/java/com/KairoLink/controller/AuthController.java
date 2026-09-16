@@ -21,6 +21,11 @@ public class AuthController {
         this.userRegistrationService = userRegistrationService;
     }
 
+    @GetMapping("/login")
+    public String showLoginForm() {
+        return "auth/login";
+    }
+
     @GetMapping("/register")
     public String showRegistrationForm(Model model) {
         model.addAttribute("registrationRequest", new RegistrationRequest());

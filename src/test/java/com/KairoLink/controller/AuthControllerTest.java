@@ -49,6 +49,13 @@ class AuthControllerTest {
     }
 
     @Test
+    void getLoginReturnsLoginView() throws Exception {
+        mockMvc.perform(get("/login"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("auth/login"));
+    }
+
+    @Test
     void postRegisterWithInvalidDtoReturnsFormWithoutPasswords() throws Exception {
         var result = mockMvc.perform(post("/register")
                         .param("name", "")

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign in to KairoLink</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/auth.css}">
+</head>
+<body class="auth-page">
+<main class="auth-shell">
+    <section class="auth-brand-panel" aria-labelledby="brand-heading">
+        <a class="auth-brand" th:href="@{/}" aria-label="KairoLink home">KairoLink</a>
+        <div class="auth-brand-content">
+            <p class="auth-eyebrow">Welcome back</p>
+            <h1 id="brand-heading">Your journey continues here.</h1>
+            <p class="auth-brand-copy">
+                Sign in to keep moving with the KairoLink community.
+            </p>
+            <div class="auth-route-mark" aria-hidden="true">
+                <span class="auth-route-dot"></span>
+                <span class="auth-route-line"></span>
+                <span class="auth-route-dot auth-route-dot--accent"></span>
+            </div>
+            <p class="auth-brand-note">Share the road. Find your way.</p>
+        </div>
+        <p class="auth-brand-footer">A calmer way to commute.</p>
+    </section>
+
+    <section class="auth-form-panel" aria-labelledby="login-heading">
+        <div class="auth-form-card">
+            <div class="auth-form-heading">
+                <p class="auth-eyebrow">Welcome back to KairoLink</p>
+                <h2 id="login-heading">Sign in to your account</h2>
+                <p>Enter your email and password to continue.</p>
+            </div>
+
+            <div class="auth-alert auth-alert--error"
+                 th:if="${param.error}"
+                 role="alert">
+                Your email or password is incorrect. Please try again.
+            </div>
+
+            <div class="auth-alert auth-alert--success"
+                 th:if="${param.logout}"
+                 role="status">
+                You have been signed out successfully.
+            </div>
+
+            <form class="auth-form"
+                  th:action="@{/login}"
+                  method="post">
+                <input type="hidden"
+                       th:name="${_csrf.parameterName}"
+                       th:value="${_csrf.token}">
+
+                <div class="auth-field">
+                    <label for="username">Email address</label>
+                    <input id="username"
+                           name="username"
+                           type="email"
+                           autocomplete="email"
+                           maxlength="255"
+                           required>
+                </div>
+
+                <div class="auth-field">
+                    <label for="password">Password</label>
+                    <input id="password"
+                           name="password"
+                           type="password"
+                           autocomplete="current-password"
+                           required>
+                </div>
+
+                <button class="auth-submit" type="submit">Sign in</button>
+            </form>
+
+            <p class="auth-form-footer">
+                New to KairoLink?
+                <a th:href="@{/register}">Create an account</a>
+            </p>
+        </div>
+    </section>
+</main>
+</body>
+</html>
