@@ -3,49 +3,57 @@
       xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{fragments/header :: header}">
 </head>
-<body>
+<body class="profile-page">
 <div th:replace="~{fragments/navbar :: navbar}"></div>
 
-<main class="container">
-    <section class="hero">
+<main class="profile-shell">
+    <header class="profile-header">
+        <span class="profile-accent" aria-hidden="true"></span>
         <h1>Edit your profile</h1>
+        <p>Keep your contact details up to date.</p>
     </section>
 
-    <form th:action="@{/profile}"
+    <form class="profile-card profile-form"
+          th:action="@{/profile}"
           th:object="${profileUpdateRequest}"
           method="post">
         <input type="hidden"
                th:name="${_csrf.parameterName}"
                th:value="${_csrf.token}">
 
-        <p><strong>Email:</strong> <span th:text="${profile.email}"></span></p>
+        <div class="profile-readonly">
+            <span class="profile-field-label">Email</span>
+            <strong th:text="${profile.email}">email@example.com</strong>
+            <small>Email cannot be changed here.</small>
+        </div>
 
-        <div>
+        <div class="profile-field">
             <label for="name">Name</label>
             <input id="name" type="text" th:field="*{name}" maxlength="100" required>
-            <p th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></p>
+            <p class="profile-error" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></p>
         </div>
 
-        <div>
+        <div class="profile-field">
             <label for="phone">Phone</label>
             <input id="phone" type="tel" th:field="*{phone}" maxlength="30">
-            <p th:if="${#fields.hasErrors('phone')}" th:errors="*{phone}"></p>
+            <p class="profile-error" th:if="${#fields.hasErrors('phone')}" th:errors="*{phone}"></p>
         </div>
 
-        <div>
+        <div class="profile-field">
             <label for="profilePhotoReference">Profile photo reference</label>
             <input id="profilePhotoReference"
                    type="text"
                    th:field="*{profilePhotoReference}"
                    maxlength="255">
-            <p th:if="${#fields.hasErrors('profilePhotoReference')}"
+            <p class="profile-error" th:if="${#fields.hasErrors('profilePhotoReference')}"
                th:errors="*{profilePhotoReference}"></p>
         </div>
 
-        <button type="submit">Save changes</button>
+        <div class="profile-form-actions">
+            <a class="ride-button ride-button--secondary" th:href="@{/profile}">Cancel</a>
+            <button class="ride-button ride-button--primary" type="submit">Save changes</button>
+        </div>
     </form>
-
-    <p><a th:href="@{/profile}">Cancel</a></p>
 </main>
 
 <div th:replace="~{fragments/footer :: footer}"></div>

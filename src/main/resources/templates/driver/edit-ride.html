@@ -1,20 +1,62 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{fragments/header :: header}"></head>
-<body>
+<body class="ride-page">
 <div th:replace="~{fragments/navbar :: navbar}"></div>
-<main class="container">
-    <section class="hero"><h1>Edit Ride</h1></section>
-    <form th:action="@{/rides/{id}(id=${rideId})}" th:object="${rideRequest}" method="post">
+<main class="ride-shell">
+    <header class="ride-page-header">
+        <span class="ride-accent" aria-hidden="true"></span>
+        <h1>Edit Ride</h1>
+        <p>Update your route and ride details before your journey begins.</p>
+    </header>
+    <form class="ride-form" th:action="@{/rides/{id}(id=${rideId})}" th:object="${rideRequest}" method="post">
         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
-        <div><label for="source">Source</label><input id="source" type="text" th:field="*{source}" maxlength="150" required><p th:if="${#fields.hasErrors('source')}" th:errors="*{source}"></p></div>
-        <div><label for="destination">Destination</label><input id="destination" type="text" th:field="*{destination}" maxlength="150" required><p th:if="${#fields.hasErrors('destination')}" th:errors="*{destination}"></p><p th:if="${#fields.hasErrors('routeDistinct')}" th:errors="*{routeDistinct}"></p></div>
-        <div><label for="departureTime">Departure time</label><input id="departureTime" type="datetime-local" th:field="*{departureTime}" required><p th:if="${#fields.hasErrors('departureTime')}" th:errors="*{departureTime}"></p></div>
-        <div><label for="seats">Seats</label><input id="seats" type="number" th:field="*{seats}" min="1" required><p th:if="${#fields.hasErrors('seats')}" th:errors="*{seats}"></p></div>
-        <div><label for="price">Price per seat</label><input id="price" type="number" th:field="*{price}" min="0" step="0.01" required><p th:if="${#fields.hasErrors('price')}" th:errors="*{price}"></p></div>
-        <button type="submit">Save Ride</button>
+        <section class="ride-form-card">
+            <h2>Route Details</h2>
+            <div class="ride-route-fields">
+                <div class="ride-field">
+                    <label for="source">Starting point</label>
+                    <input id="source" type="text" th:field="*{source}" maxlength="150" required>
+                    <p class="ride-field-error" th:if="${#fields.hasErrors('source')}" th:errors="*{source}"></p>
+                </div>
+                <div class="ride-field">
+                    <label for="destination">Destination</label>
+                    <input id="destination" type="text" th:field="*{destination}" maxlength="150" required>
+                    <p class="ride-field-error" th:if="${#fields.hasErrors('destination')}" th:errors="*{destination}"></p>
+                    <p class="ride-field-error" th:if="${#fields.hasErrors('routeDistinct')}" th:errors="*{routeDistinct}"></p>
+                </div>
+            </div>
+        </section>
+        <section class="ride-form-card">
+            <h2>Schedule</h2>
+            <div class="ride-schedule-fields">
+                <div class="ride-field">
+                    <label for="departureTime">Departure date and time</label>
+                    <input id="departureTime" type="datetime-local" th:field="*{departureTime}" required>
+                    <p class="ride-field-error" th:if="${#fields.hasErrors('departureTime')}" th:errors="*{departureTime}"></p>
+                </div>
+            </div>
+        </section>
+        <section class="ride-form-card">
+            <h2>Ride Settings</h2>
+            <div class="ride-settings-fields">
+                <div class="ride-field">
+                    <label for="seats">Seats offered</label>
+                    <input id="seats" type="number" th:field="*{seats}" min="1" required>
+                    <p class="ride-field-error" th:if="${#fields.hasErrors('seats')}" th:errors="*{seats}"></p>
+                </div>
+                <div class="ride-field">
+                    <label for="price">Price per seat</label>
+                    <input id="price" type="number" th:field="*{price}" min="0" step="0.01" required>
+                    <p class="ride-field-error" th:if="${#fields.hasErrors('price')}" th:errors="*{price}"></p>
+                </div>
+            </div>
+        </section>
+        <div class="ride-form-actions">
+            <a class="ride-button ride-button--secondary" th:href="@{/rides}">Cancel</a>
+            <button class="ride-button ride-button--primary" type="submit">Save Ride</button>
+        </div>
     </form>
-    <p><a th:href="@{/rides}">Cancel</a></p>
 </main>
 <div th:replace="~{fragments/footer :: footer}"></div>
 </body>
