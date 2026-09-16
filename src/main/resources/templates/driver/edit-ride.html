@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/header :: header}"></head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+<main class="container">
+    <section class="hero"><h1>Edit Ride</h1></section>
+    <form th:action="@{/rides/{id}(id=${rideId})}" th:object="${rideRequest}" method="post">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+        <div><label for="source">Source</label><input id="source" type="text" th:field="*{source}" maxlength="150" required><p th:if="${#fields.hasErrors('source')}" th:errors="*{source}"></p></div>
+        <div><label for="destination">Destination</label><input id="destination" type="text" th:field="*{destination}" maxlength="150" required><p th:if="${#fields.hasErrors('destination')}" th:errors="*{destination}"></p><p th:if="${#fields.hasErrors('routeDistinct')}" th:errors="*{routeDistinct}"></p></div>
+        <div><label for="departureTime">Departure time</label><input id="departureTime" type="datetime-local" th:field="*{departureTime}" required><p th:if="${#fields.hasErrors('departureTime')}" th:errors="*{departureTime}"></p></div>
+        <div><label for="seats">Seats</label><input id="seats" type="number" th:field="*{seats}" min="1" required><p th:if="${#fields.hasErrors('seats')}" th:errors="*{seats}"></p></div>
+        <div><label for="price">Price per seat</label><input id="price" type="number" th:field="*{price}" min="0" step="0.01" required><p th:if="${#fields.hasErrors('price')}" th:errors="*{price}"></p></div>
+        <button type="submit">Save Ride</button>
+    </form>
+    <p><a th:href="@{/rides}">Cancel</a></p>
+</main>
+<div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>
