@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/header :: header}"></head>
+<body class="ride-page">
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+<main class="ride-shell ride-list-shell">
+    <header class="ride-page-header">
+        <span class="ride-accent" aria-hidden="true"></span>
+        <h1>My Rides</h1>
+        <p>Your complete ride history and upcoming trips.</p>
+        <a class="ride-header-action" th:href="@{/rides/new}">Publish a Ride</a>
+    </header>
+
+    <div class="ride-notices" role="status">
+        <p th:if="${param.created}">Your ride was published successfully.</p>
+        <p th:if="${param.updated}">Your ride was updated successfully.</p>
+        <p th:if="${param.cancelled}">Your ride was cancelled.</p>
+    </div>
+
+    <nav class="ride-status-tabs" aria-label="Ride status summary">
+        <span class="ride-status-tab ride-status-tab--active">All Rides <b th:text="${#lists.size(rides)}">0</b></span>
+        <span class="ride-status-tab">Active</span>
+        <span class="ride-status-tab">Ongoing</span>
+        <span class="ride-status-tab">Completed</span>
+        <span class="ride-status-tab">Cancelled</span>
+    </nav>
+
+    <section class="ride-list" th:if="${#lists.isEmpty(rides)}">
+        <div class="ride-empty-state">
+            <h2>No rides yet</h2>
+            <p>You have not published any rides yet.</p>
+            <a class="ride-button ride-button--primary" th:href="@{/rides/new}">Publish a Ride</a>
+        </div>
+    </section>
+
+    <section class="ride-list" th:unless="${#lists.isEmpty(rides)}">
+        <article class="ride-list-card" th:each="ride : ${rides}">
+            <div class="ride-card-main">
+                <div class="ride-route">
+                    <div class="ride-stop ride-stop--source">
+                        <span class="ride-stop-marker" aria-hidden="true"></span>
+                        <h2 th:text="${ride.source}">Source</h2>
+                    </div>
+                    <div class="ride-route-connector" aria-hidden="true"></div>
+                    <div class="ride-stop ride-stop--destination">
+                        <span class="ride-stop-marker" aria-hidden="true"></span>
+                        <h2 th:text="${ride.destination}">Destination</h2>
+                    </div>
+                </div>
+                <span class="ride-status-badge"
+                      th:classappend="${' ride-status-badge--' + #strings.toLowerCase(ride.status.name())}"
+                      th:text="${ride.status}">ACTIVE</span>
+            </div>
+
+            <div class="ride-card-meta">
+                <span class="ride-date">
+                    <strong th:text="${#temporals.format(ride.departureTime, 'EEE, dd MMM')}">Thu, 19 Dec</strong>
+                    <span aria-hidden="true">·</span>
+                    <strong th:text="${#temporals.format(ride.departureTime, 'hh:mm a')}">08:30 AM</strong>
+                </span>
+                <span><b th:text="${ride.seats}">3</b> seats</span>
+                <span><b th:text="${ride.price}">0.00</b> per seat</span>
+            </div>
+
+            <div class="ride-card-actions"
+                 th:if="${ride.status.name() == 'ACTIVE' and ride.departureTime.isAfter(T(java.time.LocalDateTime).now())}">
+                <a class="ride-button ride-button--secondary" th:href="@{/rides/{id}/edit(id=${ride.id})}">Edit Ride</a>
+                <form th:action="@{/rides/{id}/cancel(id=${ride.id})}" method="post">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                    <button class="ride-button ride-button--danger" type="submit">Cancel Ride</button>
+                </form>
+            </div>
+        </article>
+    </section>
+</main>
+<div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

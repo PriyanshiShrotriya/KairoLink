@@ -3,24 +3,48 @@
       xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{fragments/header :: header}">
 </head>
-<body>
+<body class="profile-page">
 <div th:replace="~{fragments/navbar :: navbar}"></div>
 
-<main class="container">
-    <section class="hero">
+<main class="profile-shell">
+    <header class="profile-header">
+        <span class="profile-accent" aria-hidden="true"></span>
         <h1>Your profile</h1>
         <p th:if="${param.updated}" role="status">Your profile was updated successfully.</p>
     </section>
 
-    <section>
-        <p><strong>Name:</strong> <span th:text="${profile.name}"></span></p>
-        <p><strong>Email:</strong> <span th:text="${profile.email}"></span></p>
-        <p><strong>Phone:</strong> <span th:text="${profile.phone ?: 'Not provided'}"></span></p>
-        <p><strong>Profile photo reference:</strong>
-            <span th:text="${profile.profilePhotoReference ?: 'Not provided'}"></span>
-        </p>
-        <p><strong>Roles:</strong> <span th:text="${profile.roles}"></span></p>
-        <p><a th:href="@{/profile/edit}">Edit profile</a></p>
+    <section class="profile-card" aria-labelledby="profile-details-title">
+        <div class="profile-card-heading">
+            <div class="profile-avatar" aria-hidden="true"
+                 th:text="${#strings.substring(profile.name, 0, 1).toUpperCase()}">K</div>
+            <div>
+                <h2 id="profile-details-title" th:text="${profile.name}">Your name</h2>
+                <p>Account details</p>
+            </div>
+        </div>
+
+        <dl class="profile-details">
+            <div>
+                <dt>Email</dt>
+                <dd th:text="${profile.email}">email@example.com</dd>
+            </div>
+            <div>
+                <dt>Phone</dt>
+                <dd th:text="${profile.phone ?: 'Not provided'}">Not provided</dd>
+            </div>
+            <div>
+                <dt>Profile photo reference</dt>
+                <dd th:text="${profile.profilePhotoReference ?: 'Not provided'}">Not provided</dd>
+            </div>
+            <div>
+                <dt>Roles</dt>
+                <dd th:text="${profile.roles}">ROLE_USER</dd>
+            </div>
+        </dl>
+
+        <div class="profile-actions">
+            <a class="ride-button ride-button--primary" th:href="@{/profile/edit}">Edit profile</a>
+        </div>
     </section>
 </main>
 

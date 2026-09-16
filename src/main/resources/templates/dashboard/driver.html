@@ -1,16 +1,68 @@
 <!DOCTYPE html>
 <html lang="en"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
       xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{fragments/header :: header}">
 </head>
-<body>
+<body class="dashboard-page">
 <div th:replace="~{fragments/navbar :: navbar}"></div>
 
-<main class="container">
-    <section class="hero">
-        <h1>Driver dashboard</h1>
-        <p>Your space for sharing the journeys you offer.</p>
-        <p><a th:href="@{/vehicle}">Manage vehicle</a></p>
+<main class="dashboard-shell">
+    <header class="dashboard-header">
+        <div>
+            <span class="dashboard-accent" aria-hidden="true"></span>
+            <p class="dashboard-eyebrow">DRIVER DASHBOARD</p>
+            <h1>Welcome back, <span sec:authentication="name">Driver</span></h1>
+            <p class="dashboard-subtitle">Your space for sharing the journeys you offer.</p>
+        </div>
+        <a class="dashboard-profile-link" th:href="@{/profile}">View profile</a>
+    </header>
+
+    <section class="dashboard-grid" aria-label="Driver actions">
+        <a class="dashboard-action dashboard-action--primary" th:href="@{/rides/new}">
+            <span class="dashboard-action-icon" aria-hidden="true">+</span>
+            <span>
+                <strong>Publish a Ride</strong>
+                <small>Share your next campus journey</small>
+            </span>
+            <span class="dashboard-action-arrow" aria-hidden="true">→</span>
+        </a>
+
+        <a class="dashboard-action" th:href="@{/rides}">
+            <span class="dashboard-action-icon" aria-hidden="true">≡</span>
+            <span>
+                <strong>My Rides</strong>
+                <small>View and manage your published rides</small>
+            </span>
+            <span class="dashboard-action-arrow" aria-hidden="true">→</span>
+        </a>
+
+        <a class="dashboard-action" th:href="@{/vehicle}">
+            <span class="dashboard-action-icon" aria-hidden="true">▱</span>
+            <span>
+                <strong>Manage Vehicle</strong>
+                <small>Keep your vehicle details up to date</small>
+            </span>
+            <span class="dashboard-action-arrow" aria-hidden="true">→</span>
+        </a>
+
+        <a class="dashboard-action" th:href="@{/profile}">
+            <span class="dashboard-action-icon" aria-hidden="true">○</span>
+            <span>
+                <strong>Profile</strong>
+                <small>Review your account information</small>
+            </span>
+            <span class="dashboard-action-arrow" aria-hidden="true">→</span>
+        </a>
+    </section>
+
+    <section class="dashboard-note" aria-labelledby="dashboard-note-title">
+        <div class="dashboard-note-mark" aria-hidden="true">✓</div>
+        <div>
+            <h2 id="dashboard-note-title">Ready to share a ride?</h2>
+            <p>Connect with your campus community and make every journey count.</p>
+        </div>
+        <a class="ride-button ride-button--primary" th:href="@{/rides/new}">Get started</a>
     </section>
 </main>
 
