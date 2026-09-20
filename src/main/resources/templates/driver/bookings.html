@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/header :: header}"></head>
+<body class="ride-page">
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<main class="ride-shell ride-list-shell">
+    <header class="ride-page-header">
+        <span class="ride-accent" aria-hidden="true"></span>
+        <p class="dashboard-eyebrow">DRIVER BOOKINGS</p>
+        <h1>Booking Requests</h1>
+        <p>Review riders requesting seats on your published rides.</p>
+    </header>
+
+    <div class="ride-notices" role="status">
+        <p th:if="${param.accepted}">Booking confirmed and available seats updated.</p>
+        <p th:if="${param.rejected}">Booking request rejected.</p>
+    </div>
+
+    <section class="ride-list" th:if="${bookings != null and !#lists.isEmpty(bookings)}" aria-label="Booking requests">
+        <article class="ride-list-card" th:each="booking : ${bookings}">
+            <div class="ride-card-main">
+                <div class="ride-route">
+                    <div class="ride-stop ride-stop--source"><span class="ride-stop-marker" aria-hidden="true"></span><h2 th:text="${booking.ride.source}">Source</h2></div>
+                    <div class="ride-route-connector" aria-hidden="true"></div>
+                    <div class="ride-stop ride-stop--destination"><span class="ride-stop-marker" aria-hidden="true"></span><h2 th:text="${booking.ride.destination}">Destination</h2></div>
+                </div>
+                <span class="ride-status-badge" th:classappend="${' ride-status-badge--' + #strings.toLowerCase(booking.status.name())}" th:text="${booking.status}">PENDING</span>
+            </div>
+            <div class="ride-card-meta">
+                <span class="ride-date"><strong th:text="${#temporals.format(booking.ride.departureTime, 'EEE, dd MMM')}">Thu, 20 Sep</strong><span aria-hidden="true">·</span><strong th:text="${#temporals.format(booking.ride.departureTime, 'hh:mm a')}">08:30 AM</strong></span>
+                <span>Rider: <b th:text="${booking.rider.name}">Rider</b></span>
+                <span><b th:text="${booking.seatsRequested}">1</b> seats requested</span>
+                <span><b>₹<span th:text="${booking.totalPrice}">150</span></b> total</span>
+            </div>
+            <div class="ride-card-actions" th:if="${booking.status.name() == 'PENDING'}">
+                <form th:action="@{/driver/bookings/{id}/accept(id=${booking.id})}" method="post">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                    <button class="ride-button ride-button--primary" type="submit">Accept</button>
+                </form>
+                <form th:action="@{/driver/bookings/{id}/reject(id=${booking.id})}" method="post">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                    <button class="ride-button ride-button--danger" type="submit">Reject</button>
+                </form>
+            </div>
+        </article>
+    </section>
+
+    <section class="ride-list" th:if="${bookings != null and #lists.isEmpty(bookings)}">
+        <div class="ride-empty-state">
+            <h2>No booking requests</h2>
+            <p>New rider requests for your rides will appear here.</p>
+        </div>
+    </section>
+</main>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

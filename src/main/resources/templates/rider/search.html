@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/header :: header}"></head>
+<body class="ride-page rider-page">
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<main class="ride-shell rider-search-shell">
+    <header class="ride-page-header">
+        <span class="ride-accent" aria-hidden="true"></span>
+        <p class="rider-eyebrow">RIDER SEARCH</p>
+        <h1>Find Your Ride</h1>
+        <p>Search for available rides across the NIET campus route network.</p>
+    </header>
+
+    <section class="rider-search-card" aria-labelledby="search-rides-title">
+        <div class="rider-card-heading">
+            <h2 id="search-rides-title">Search Rides</h2>
+        </div>
+        <form class="rider-search-form" th:action="@{/rider/results}" method="get">
+            <div class="rider-route-fields">
+                <div class="ride-field rider-route-field">
+                    <label for="source">From</label>
+                    <div class="rider-input-wrap rider-input-wrap--source">
+                        <span class="rider-input-marker" aria-hidden="true"></span>
+                        <input id="source" name="source" type="text" placeholder="NIET, Knowledge Park II, Greater Noida" autocomplete="off">
+                    </div>
+                </div>
+                <div class="ride-field rider-route-field">
+                    <label for="destination">To</label>
+                    <div class="rider-input-wrap rider-input-wrap--destination">
+                        <span class="rider-input-marker" aria-hidden="true"></span>
+                        <input id="destination" name="destination" type="text" placeholder="Destination" autocomplete="off">
+                    </div>
+                </div>
+            </div>
+
+            <div class="rider-search-options">
+                <div class="ride-field">
+                    <label for="date">Date</label>
+                    <input id="date" name="date" type="date">
+                </div>
+                <div class="ride-field">
+                    <label for="time">Time</label>
+                    <input id="time" name="time" type="time">
+                </div>
+                <div class="ride-field">
+                    <label for="seats">Seats</label>
+                    <select id="seats" name="seats">
+                        <option value="1">1 Seat</option>
+                        <option value="2">2 Seats</option>
+                        <option value="3">3 Seats</option>
+                    </select>
+                </div>
+            </div>
+
+            <button class="ride-button ride-button--primary rider-search-submit" type="submit">Search Rides</button>
+        </form>
+    </section>
+
+    <section class="rider-popular" aria-labelledby="popular-routes-title">
+        <div class="rider-section-heading">
+            <h2 id="popular-routes-title">Popular Routes</h2>
+        </div>
+        <div class="rider-route-grid">
+            <a class="rider-popular-route" th:href="@{/rider/results(source='NIET', destination='Pari Chowk Metro')}" >
+                <span class="rider-route-copy"><strong>NIET</strong><span>Pari Chowk Metro</span></span>
+                <span class="rider-route-arrow" aria-hidden="true">›</span>
+            </a>
+            <a class="rider-popular-route" th:href="@{/rider/results(source='NIET', destination='Sector 62, Noida')}" >
+                <span class="rider-route-copy"><strong>NIET</strong><span>Sector 62, Noida</span></span>
+                <span class="rider-route-arrow" aria-hidden="true">›</span>
+            </a>
+            <a class="rider-popular-route" th:href="@{/rider/results(source='NIET', destination='Noida City Centre')}" >
+                <span class="rider-route-copy"><strong>NIET</strong><span>Noida City Centre</span></span>
+                <span class="rider-route-arrow" aria-hidden="true">›</span>
+            </a>
+            <a class="rider-popular-route" th:href="@{/rider/results(source='NIET', destination='Greater Noida West')}" >
+                <span class="rider-route-copy"><strong>NIET</strong><span>Greater Noida West</span></span>
+                <span class="rider-route-arrow" aria-hidden="true">›</span>
+            </a>
+        </div>
+    </section>
+</main>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

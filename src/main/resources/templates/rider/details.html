@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/header :: header}"></head>
+<body class="ride-page rider-page">
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<main class="ride-shell rider-details-shell">
+    <header class="rider-detail-header">
+        <a class="rider-back-link" th:href="@{/rider/results}">← Back to results</a>
+        <span class="ride-accent" aria-hidden="true"></span>
+        <p class="rider-eyebrow">RIDE DETAILS</p>
+        <h1>Review your ride</h1>
+        <p>Check the route, driver, and ride information before requesting a seat.</p>
+    </header>
+
+    <section class="rider-detail-layout" aria-label="Ride details">
+        <div class="rider-detail-main">
+            <article class="ride-list-card rider-route-card">
+                <div class="rider-detail-card-heading">
+                    <div>
+                        <p class="rider-card-label">ROUTE</p>
+                        <h2><span th:text="${ride != null ? ride.source : 'NIET, Knowledge Park II'}">NIET, Knowledge Park II</span><span class="rider-route-arrow rider-route-arrow--large" aria-hidden="true">→</span><span th:text="${ride != null ? ride.destination : 'Pari Chowk Metro'}">Pari Chowk Metro</span></h2>
+                    </div>
+                    <span class="ride-status-badge ride-status-badge--active" th:text="${ride != null ? ride.status : 'ACTIVE'}">ACTIVE</span>
+                </div>
+                <div class="rider-detail-meta">
+                    <div><span class="rider-meta-icon" aria-hidden="true">◷</span><span><small>DEPARTURE</small><strong th:text="${ride != null ? #temporals.format(ride.departureTime, 'EEE, dd MMM yyyy') : 'Sunday, 20 September 2026'}">Sunday, 20 September 2026</strong><strong th:text="${ride != null ? #temporals.format(ride.departureTime, 'hh:mm a') : '08:30 AM'}">08:30 AM</strong></span></div>
+                    <div><span class="rider-meta-icon" aria-hidden="true">○</span><span><small>AVAILABILITY</small><strong><span th:text="${ride != null ? ride.seats : '2'}">2</span> seats available</strong></span></div>
+                    <div><span class="rider-meta-icon" aria-hidden="true">₹</span><span><small>PRICE PER SEAT</small><strong class="rider-detail-price">₹<span th:text="${ride != null ? ride.price : '150'}">150</span></strong></span></div>
+                </div>
+            </article>
+
+            <article class="ride-list-card rider-info-card">
+                <div class="rider-detail-section-heading"><span class="ride-accent" aria-hidden="true"></span><h2>About your driver</h2></div>
+                <div class="rider-driver-profile">
+                    <div class="rider-driver-avatar rider-driver-avatar--large" aria-hidden="true">RS</div>
+                    <div><h3 th:text="${driver != null ? driver.name : (ride != null ? ride.driver.name : 'Rahul Sharma')}">Rahul Sharma</h3><p><span class="rider-rating" aria-hidden="true">★</span><span class="visually-hidden">Rating 4.8 out of 5.</span> 4.8 rating · Verified KairoLink member</p></div>
+                </div>
+            </article>
+
+            <article class="ride-list-card rider-info-card">
+                <div class="rider-detail-section-heading"><span class="ride-accent" aria-hidden="true"></span><h2>Vehicle information</h2></div>
+                <div class="rider-vehicle-placeholder">
+                    <div class="rider-vehicle-icon" aria-hidden="true">▱</div>
+                    <div><h3 th:text="${vehicle != null ? vehicle.model : 'Hyundai Creta'}">Hyundai Creta</h3><p>Vehicle details will be connected during backend integration.</p></div>
+                    <span class="rider-placeholder-badge">Preview</span>
+                </div>
+            </article>
+        </div>
+
+        <aside class="rider-detail-sidebar">
+            <section class="ride-list-card rider-request-card" th:if="${ride == null or ride.status == null or ride.status.name() == 'ACTIVE'}">
+                <p class="rider-card-label">READY TO GO?</p>
+                <h2>Request your seat</h2>
+                <p>Send a request to the driver for this shared journey.</p>
+                <div class="rider-request-price"><span>Price per seat</span><strong>₹<span th:text="${ride != null ? ride.price : '150'}">150</span></strong></div>
+                <a class="ride-button ride-button--primary" th:href="@{/rider/ride/{id}/request(id=${ride != null ? ride.id : 1})}">Request Seat</a>
+                <small class="rider-trust-note">You will review the request before it is submitted.</small>
+            </section>
+
+            <section class="ride-empty-state rider-unavailable-card" th:unless="${ride == null or ride.status == null or ride.status.name() == 'ACTIVE'}">
+                <div class="rider-empty-icon" aria-hidden="true">!</div>
+                <h2>Ride unavailable</h2>
+                <p>This ride is no longer accepting requests.</p>
+                <a class="ride-button ride-button--secondary" th:href="@{/rider/results}">Find another ride</a>
+            </section>
+        </aside>
+    </section>
+</main>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

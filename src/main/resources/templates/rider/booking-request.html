@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/header :: header}"></head>
+<body class="ride-page rider-page">
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<main class="ride-shell rider-request-shell">
+    <header class="rider-detail-header">
+        <a class="rider-back-link" th:href="@{/rider/ride/{id}(id=${ride != null ? ride.id : 1})}">← Back to ride details</a>
+        <span class="ride-accent" aria-hidden="true"></span>
+        <p class="rider-eyebrow">BOOKING REQUEST</p>
+        <h1>Request a seat</h1>
+        <p>Review your request before sending it to the driver.</p>
+    </header>
+
+    <section class="rider-request-layout" aria-label="Booking request">
+        <div class="rider-request-summary">
+            <article class="ride-list-card rider-summary-card">
+                <div class="rider-detail-section-heading"><span class="ride-accent" aria-hidden="true"></span><h2>Selected ride</h2></div>
+                <div class="rider-summary-route"><div><span class="ride-stop-marker" aria-hidden="true"></span><strong th:text="${ride != null ? ride.source : 'NIET, Knowledge Park II'}">NIET, Knowledge Park II</strong></div><span class="rider-summary-connector" aria-hidden="true"></span><div><span class="ride-stop-marker rider-stop-marker--destination" aria-hidden="true"></span><strong th:text="${ride != null ? ride.destination : 'Pari Chowk Metro'}">Pari Chowk Metro</strong></div></div>
+                <div class="rider-summary-meta"><span th:text="${ride != null ? #temporals.format(ride.departureTime, 'EEE, dd MMM yyyy') : 'Sunday, 20 September 2026'}">Sunday, 20 September 2026</span><span aria-hidden="true">·</span><span th:text="${ride != null ? #temporals.format(ride.departureTime, 'hh:mm a') : '08:30 AM'}">08:30 AM</span></div>
+                <div class="rider-summary-driver"><span class="rider-driver-avatar" aria-hidden="true">RS</span><span><strong th:text="${driver != null ? driver.name : (ride != null ? ride.driver.name : 'Rahul Sharma')}">Rahul Sharma</strong><small>Verified driver · ★ 4.8</small></span></div>
+            </article>
+        </div>
+
+        <section class="ride-list-card rider-confirmation-card" th:if="${booking == null or booking.status == null}">
+            <p class="rider-card-label">YOUR REQUEST</p>
+            <h2>Confirm seat request</h2>
+            <form class="rider-request-form" th:action="@{/rider/ride/{id}/request(id=${ride != null ? ride.id : 1})}" method="post">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                <div class="ride-field">
+                    <label for="seatsRequested">Seats requested</label>
+                    <select id="seatsRequested" name="seatsRequested">
+                        <option value="1">1 seat</option>
+                        <option value="2">2 seats</option>
+                    </select>
+                </div>
+                <div class="rider-total-row"><span>Price per seat</span><strong>₹<span th:text="${ride != null ? ride.price : '150'}">150</span></strong></div>
+                <div class="rider-total-row rider-total-row--final"><span>Total for request</span><strong>₹<span th:text="${totalPrice != null ? totalPrice : (ride != null ? ride.price : '150')}">150</span></strong></div>
+                <p class="rider-request-note">The driver will review your request before confirming the seat.</p>
+                <div class="rider-form-actions"><a class="ride-button ride-button--secondary" th:href="@{/rider/ride/{id}(id=${ride != null ? ride.id : 1})}">Cancel</a><button class="ride-button ride-button--primary" type="submit">Confirm Request</button></div>
+            </form>
+        </section>
+
+        <section class="ride-list-card rider-state-card" th:if="${booking != null and booking.status != null and booking.status.name() == 'PENDING'}" role="status">
+            <div class="rider-state-icon rider-state-icon--pending" aria-hidden="true">⌁</div>
+            <span class="ride-status-badge ride-status-badge--pending">PENDING</span>
+            <h2>Request submitted</h2>
+            <p>Your seat request is waiting for the driver's response.</p>
+            <a class="ride-button ride-button--secondary" th:href="@{/rider/bookings}">View request status</a>
+        </section>
+
+        <section class="ride-empty-state rider-state-card" th:if="${ride != null and ride.status != null and ride.status.name() != 'ACTIVE' and (booking == null or booking.status == null)}" role="alert">
+            <div class="rider-empty-icon" aria-hidden="true">!</div>
+            <h2>Ride unavailable</h2>
+            <p>This ride is no longer accepting booking requests.</p>
+            <a class="ride-button ride-button--secondary" th:href="@{/rider/results}">Find another ride</a>
+        </section>
+    </section>
+</main>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>
