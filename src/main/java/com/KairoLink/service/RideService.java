@@ -52,11 +52,12 @@ public class RideService {
 
     @Transactional
     public List<Ride> search(String source, String destination, LocalDate date) {
-        if (source == null || destination == null || date == null
+        if (source == null || destination == null
                 || source.trim().isEmpty() || destination.trim().isEmpty()) {
             return List.of();
         }
-        LocalDateTime dayStart = date.atStartOfDay();
+        LocalDate searchDate = (date != null) ? date : LocalDate.now();
+        LocalDateTime dayStart = searchDate.atStartOfDay();
         return rideRepository.searchAvailable(
                 source.trim(),
                 destination.trim(),

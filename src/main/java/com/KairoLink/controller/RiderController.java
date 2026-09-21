@@ -47,10 +47,15 @@ public class RiderController {
             @RequestParam(required = false) String destination,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
             Model model) {
-        model.addAttribute("source", normalizeOptional(source));
-        model.addAttribute("destination", normalizeOptional(destination));
-        model.addAttribute("date", date);
-        model.addAttribute("rides", rideService.search(source, destination, date));
+        String normalizedSource = normalizeOptional(source);
+        String normalizedDestination = normalizeOptional(destination);
+        LocalDate effectiveDate = (date != null || normalizedSource == null || normalizedDestination == null)
+                ? date
+                : LocalDate.now();
+        model.addAttribute("source", normalizedSource);
+        model.addAttribute("destination", normalizedDestination);
+        model.addAttribute("date", effectiveDate);
+        model.addAttribute("rides", rideService.search(source, destination, effectiveDate));
         return "rider/results";
     }
 

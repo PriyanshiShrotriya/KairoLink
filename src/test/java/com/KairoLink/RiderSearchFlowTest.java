@@ -67,6 +67,38 @@ class RiderSearchFlowTest {
         assertEquals(2, later.getSeats());
     }
 
+    @Test
+    @Transactional
+    void riderSearchDefaultsToTodayWhenDateIsOmitted() throws Exception {
+        User rider = saveUser("default-date-rider@example.com", Role.RIDER);
+        User driver = saveUser("default-date-driver@example.com", Role.DRIVER);
+
+        LocalDateTime now = LocalDateTime.now();
+        if (now.toLocalTime().isAfter(java.time.LocalTime.of(23, 59, 45))) {
+            try {
+                Thread.sleep(16000);
+            } catch (InterruptedException ignored) {}
+            now = LocalDateTime.now();
+        }
+        LocalDate today = now.toLocalDate();
+        LocalDateTime departureToday = now.plusSeconds(10);
+        LocalDateTime departureTomorrow = today.plusDays(1).atTime(12, 0);
+
+        Ride todayRide = saveRide(driver, "Campus", "Office", departureToday, 2, RideStatus.ACTIVE);
+        saveRide(driver, "Campus", "Office", departureTomorrow, 2, RideStatus.ACTIVE);
+
+        mockMvc.perform(get("/rider/results")
+                        .with(user(rider.getEmail()).roles("RIDER"))
+                        .param("source", "Campus")
+                        .param("destination", "Office"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("rider/results"))
+                .andExpect(model().attribute("date", today))
+                .andExpect(model().attribute("rides", org.hamcrest.Matchers.hasSize(1)))
+                .andExpect(model().attribute("rides", org.hamcrest.Matchers.hasItem(
+                        org.hamcrest.Matchers.hasProperty("id", org.hamcrest.Matchers.equalTo(todayRide.getId())))));
+    }
+
     private User saveUser(String email, Role role) {
         User user = new User();
         user.setName("Search User");
