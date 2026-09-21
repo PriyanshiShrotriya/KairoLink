@@ -139,6 +139,83 @@ class RideFlowTest {
                 rideRepository.findById(ride.getId()).orElseThrow().getStatus());
     }
 
+    @Test
+    @Transactional
+    void driverCanStartActiveRide() throws Exception {
+        User owner = saveUser("start-ride@example.com", Role.DRIVER);
+        Ride ride = saveRide(owner, LocalDateTime.now().plusDays(1));
+
+        mockMvc.perform(post("/rides/" + ride.getId() + "/start")
+                        .with(user(owner.getEmail()).roles("DRIVER"))
+                        .with(csrf()))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/rides?started"));
+
+        assertEquals(RideStatus.ONGOING,
+                rideRepository.findById(ride.getId()).orElseThrow().getStatus());
+    }
+
+    @Test
+    @Transactional
+    void driverCanCompleteOngoingRide() throws Exception {
+        User owner = saveUser("complete-ride@example.com", Role.DRIVER);
+        Ride ride = saveRide(owner, LocalDateTime.now().plusDays(1));
+        ride.setStatus(RideStatus.ONGOING);
+        rideRepository.saveAndFlush(ride);
+
+        mockMvc.perform(post("/rides/" + ride.getId() + "/complete")
+                        .with(user(owner.getEmail()).roles("DRIVER"))
+                        .with(csrf()))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/rides?completed"));
+
+        assertEquals(RideStatus.COMPLETED,
+                rideRepository.findById(ride.getId()).orElseThrow().getStatus());
+    }
+
+    @Test
+    @Transactional
+    void anotherDriverCannotStartOrCompleteRide() throws Exception {
+        User owner = saveUser("owner-driver@example.com", Role.DRIVER);
+        User other = saveUser("intruder-driver@example.com", Role.DRIVER);
+        Ride ride = saveRide(owner, LocalDateTime.now().plusDays(1));
+
+        mockMvc.perform(post("/rides/" + ride.getId() + "/start")
+                        .with(user(other.getEmail()).roles("DRIVER"))
+                        .with(csrf()))
+                .andExpect(status().isNotFound());
+
+        ride.setStatus(RideStatus.ONGOING);
+        rideRepository.saveAndFlush(ride);
+
+        mockMvc.perform(post("/rides/" + ride.getId() + "/complete")
+                        .with(user(other.getEmail()).roles("DRIVER"))
+                        .with(csrf()))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @Transactional
+    void cannotStartNonActiveOrCompleteNonOngoingRide() throws Exception {
+        User owner = saveUser("invalid-state@example.com", Role.DRIVER);
+        Ride ride = saveRide(owner, LocalDateTime.now().plusDays(1));
+
+        // Attempt to complete ACTIVE ride
+        mockMvc.perform(post("/rides/" + ride.getId() + "/complete")
+                        .with(user(owner.getEmail()).roles("DRIVER"))
+                        .with(csrf()))
+                .andExpect(status().isNotFound());
+
+        // Cancel ride, then attempt to start
+        ride.setStatus(RideStatus.CANCELLED);
+        rideRepository.saveAndFlush(ride);
+
+        mockMvc.perform(post("/rides/" + ride.getId() + "/start")
+                        .with(user(owner.getEmail()).roles("DRIVER"))
+                        .with(csrf()))
+                .andExpect(status().isNotFound());
+    }
+
     private User saveUser(String email, Role role) {
         User user = new User();
         user.setName("Ride User");

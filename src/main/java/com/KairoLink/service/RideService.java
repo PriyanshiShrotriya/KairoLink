@@ -64,6 +64,26 @@ public class RideService {
         return rideRepository.save(ride);
     }
 
+    @Transactional
+    public Ride start(String email, Long rideId) {
+        Ride ride = getMyRide(email, rideId);
+        if (ride.getStatus() != RideStatus.ACTIVE) {
+            throw new RideNotFoundException("Ride cannot be started");
+        }
+        ride.setStatus(RideStatus.ONGOING);
+        return rideRepository.save(ride);
+    }
+
+    @Transactional
+    public Ride complete(String email, Long rideId) {
+        Ride ride = getMyRide(email, rideId);
+        if (ride.getStatus() != RideStatus.ONGOING) {
+            throw new RideNotFoundException("Ride cannot be completed");
+        }
+        ride.setStatus(RideStatus.COMPLETED);
+        return rideRepository.save(ride);
+    }
+
     private Ride getEditableRide(String email, Long rideId) {
         Ride ride = getMyRide(email, rideId);
         if (ride.getStatus() != RideStatus.ACTIVE
