@@ -13,6 +13,7 @@ import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Locale;
 
@@ -47,6 +48,30 @@ public class RideService {
         User driver = findDriver(email);
         return rideRepository.findByIdAndDriverId(rideId, driver.getId())
                 .orElseThrow(() -> new RideNotFoundException("Ride was not found"));
+    }
+
+    @Transactional
+    public List<Ride> search(String source, String destination, LocalDate date) {
+        if (source == null || destination == null
+                || source.trim().isEmpty() || destination.trim().isEmpty()) {
+            return List.of();
+        }
+        LocalDate searchDate = (date != null) ? date : LocalDate.now();
+        LocalDateTime dayStart = searchDate.atStartOfDay();
+        return rideRepository.searchAvailable(
+                source.trim(),
+                destination.trim(),
+                dayStart,
+                dayStart.plusDays(1),
+                LocalDateTime.now());
+    }
+
+    @Transactional
+    public Ride getRide(Long rideId) {
+        Ride ride = rideRepository.findById(rideId)
+                .orElseThrow(() -> new RideNotFoundException("Ride was not found"));
+        ride.getDriver().getName();
+        return ride;
     }
 
     @Transactional

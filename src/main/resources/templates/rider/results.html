@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/header :: header}"></head>
+<body class="ride-page rider-page">
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<main class="ride-shell rider-results-shell">
+    <header class="rider-results-header">
+        <div>
+            <a class="rider-back-link" th:href="@{/rider/search}" aria-label="Back to ride search">← Back to search</a>
+            <span class="ride-accent" aria-hidden="true"></span>
+            <p class="rider-eyebrow">AVAILABLE RIDES</p>
+            <h1>Rides from <span th:if="${source != null}" th:text="${source}">NIET</span><span th:unless="${source != null}">NIET</span></h1>
+            <p class="rider-results-summary">
+                <span th:if="${destination != null}" th:text="${destination}">Pari Chowk Metro</span>
+                <span th:unless="${destination != null}">Pari Chowk Metro</span>
+                <span aria-hidden="true"> · </span>
+                <span th:if="${date != null}" th:text="${date}">20 September 2026</span>
+                <span th:unless="${date != null}">20 September 2026</span>
+            </p>
+        </div>
+        <a class="ride-button ride-button--secondary rider-change-search" th:href="@{/rider/search}">Change search</a>
+    </header>
+
+    <div class="rider-results-toolbar">
+        <p th:if="${rides != null}"><strong th:text="${#lists.size(rides)}">0</strong> rides found for your route</p>
+        <p th:unless="${rides != null}"><strong>3</strong> rides found for your route</p>
+        <label for="sort">Sort by
+            <select id="sort" name="sort">
+                <option>Departure time</option>
+                <option>Lowest price</option>
+                <option>Highest rating</option>
+            </select>
+        </label>
+    </div>
+
+    <section class="rider-results-list" aria-label="Available rides" th:if="${rides != null and !#lists.isEmpty(rides)}">
+        <article class="ride-list-card rider-ride-card" th:each="ride : ${rides}">
+            <div class="rider-ride-main">
+                <div class="rider-ride-route">
+                    <div class="ride-stop rider-ride-stop"><span class="ride-stop-marker" aria-hidden="true"></span><h2 th:text="${ride.source}">NIET, Knowledge Park II</h2></div>
+                    <div class="rider-ride-connector" aria-hidden="true"></div>
+                    <div class="ride-stop rider-ride-stop rider-ride-stop--destination"><span class="ride-stop-marker" aria-hidden="true"></span><h2 th:text="${ride.destination}">Pari Chowk Metro</h2></div>
+                </div>
+                <div class="rider-ride-time"><strong th:text="${#temporals.format(ride.departureTime, 'hh:mm a')}">08:30 AM</strong><span th:text="${#temporals.format(ride.departureTime, 'EEE, dd MMM')}">Thu, 20 Sep</span></div>
+            </div>
+            <div class="rider-ride-details">
+                <div class="rider-driver"><span class="rider-driver-avatar" aria-hidden="true">KL</span><span><strong th:text="${ride.driver.name}">Rahul Sharma</strong><small><span class="visually-hidden">Rating unavailable. </span>Vehicle details</small></span></div>
+                <span class="ride-status-badge ride-status-badge--active"><span th:text="${ride.seats}">2</span> seats available</span>
+                <strong class="rider-price">₹<span th:text="${ride.price}">150</span> <small>/ seat</small></strong>
+                <a class="ride-button ride-button--primary" th:href="@{/rider/ride/{id}(id=${ride.id})}">View Ride</a>
+            </div>
+        </article>
+    </section>
+
+    <section class="rider-results-list" aria-label="Mock available rides" th:unless="${rides != null}">
+        <article class="ride-list-card rider-ride-card">
+            <div class="rider-ride-main">
+                <div class="rider-ride-route">
+                    <div class="rider-ride-stop"><span class="ride-stop-marker" aria-hidden="true"></span><strong>NIET, Knowledge Park II</strong></div>
+                    <div class="rider-ride-connector" aria-hidden="true"></div>
+                    <div class="rider-ride-stop rider-ride-stop--destination"><span class="ride-stop-marker" aria-hidden="true"></span><strong>Pari Chowk Metro</strong></div>
+                </div>
+                <div class="rider-ride-time"><strong>08:30 AM</strong><span>Thu, 20 Sep</span></div>
+            </div>
+            <div class="rider-ride-details">
+                <div class="rider-driver"><span class="rider-driver-avatar" aria-hidden="true">RS</span><span><strong>Rahul Sharma</strong><small><span class="visually-hidden">Rating 4.8 out of 5. </span>★ 4.8 · Hyundai Creta</small></span></div>
+                <span class="ride-status-badge ride-status-badge--active">2 seats available</span>
+                <strong class="rider-price">₹150 <small>/ seat</small></strong>
+                <a class="ride-button ride-button--primary" th:href="@{/rider/ride/{id}(id=1)}">View Ride</a>
+            </div>
+        </article>
+
+        <article class="ride-list-card rider-ride-card">
+            <div class="rider-ride-main">
+                <div class="rider-ride-route">
+                    <div class="rider-ride-stop"><span class="ride-stop-marker" aria-hidden="true"></span><strong>NIET, Knowledge Park II</strong></div>
+                    <div class="rider-ride-connector" aria-hidden="true"></div>
+                    <div class="rider-ride-stop rider-ride-stop--destination"><span class="ride-stop-marker" aria-hidden="true"></span><strong>Pari Chowk Metro</strong></div>
+                </div>
+                <div class="rider-ride-time"><strong>09:15 AM</strong><span>Thu, 20 Sep</span></div>
+            </div>
+            <div class="rider-ride-details">
+                <div class="rider-driver"><span class="rider-driver-avatar rider-driver-avatar--amber" aria-hidden="true">AS</span><span><strong>Ananya Singh</strong><small><span class="visually-hidden">Rating 4.9 out of 5. </span>★ 4.9 · Maruti Suzuki Brezza</small></span></div>
+                <span class="ride-status-badge ride-status-badge--active">1 seat available</span>
+                <strong class="rider-price">₹120 <small>/ seat</small></strong>
+                <a class="ride-button ride-button--primary" th:href="@{/rider/ride/{id}(id=2)}">View Ride</a>
+            </div>
+        </article>
+
+        <article class="ride-list-card rider-ride-card">
+            <div class="rider-ride-main">
+                <div class="rider-ride-route">
+                    <div class="rider-ride-stop"><span class="ride-stop-marker" aria-hidden="true"></span><strong>NIET, Knowledge Park II</strong></div>
+                    <div class="rider-ride-connector" aria-hidden="true"></div>
+                    <div class="rider-ride-stop rider-ride-stop--destination"><span class="ride-stop-marker" aria-hidden="true"></span><strong>Pari Chowk Metro</strong></div>
+                </div>
+                <div class="rider-ride-time"><strong>06:00 PM</strong><span>Thu, 20 Sep</span></div>
+            </div>
+            <div class="rider-ride-details">
+                <div class="rider-driver"><span class="rider-driver-avatar rider-driver-avatar--teal" aria-hidden="true">VK</span><span><strong>Vikram Kapoor</strong><small><span class="visually-hidden">Rating 4.7 out of 5. </span>★ 4.7 · Tata Nexon</small></span></div>
+                <span class="ride-status-badge ride-status-badge--active">3 seats available</span>
+                <strong class="rider-price">₹135 <small>/ seat</small></strong>
+                <a class="ride-button ride-button--primary" th:href="@{/rider/ride/{id}(id=3)}">View Ride</a>
+            </div>
+        </article>
+    </section>
+
+    <section class="ride-empty-state rider-empty-state" th:if="${rides != null and #lists.isEmpty(rides)}" aria-label="No rides found">
+        <div class="rider-empty-icon" aria-hidden="true">⌕</div>
+        <h2>No rides found</h2>
+        <p>We could not find rides matching this route and date. Try changing your search.</p>
+        <a class="ride-button ride-button--secondary" th:href="@{/rider/search}">Try another search</a>
+    </section>
+</main>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>
