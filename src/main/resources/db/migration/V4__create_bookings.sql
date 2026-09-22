@@ -33,7 +33,3 @@ CREATE INDEX idx_bookings_ride
 
 CREATE INDEX idx_bookings_status
     ON bookings (status);
-
-CREATE UNIQUE INDEX uk_bookings_active_rider_ride
-    ON bookings (rider_id, ride_id)
-    WHERE status IN ('PENDING', 'CONFIRMED');
