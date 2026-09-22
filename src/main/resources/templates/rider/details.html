@@ -40,10 +40,17 @@
 
             <article class="ride-list-card rider-info-card">
                 <div class="rider-detail-section-heading"><span class="ride-accent" aria-hidden="true"></span><h2>Vehicle information</h2></div>
-                <div class="rider-vehicle-placeholder">
+                <div class="rider-vehicle-placeholder" th:if="${vehicle != null}">
                     <div class="rider-vehicle-icon" aria-hidden="true">▱</div>
-                    <div><h3 th:text="${vehicle != null ? vehicle.model : 'Hyundai Creta'}">Hyundai Creta</h3><p>Vehicle details will be connected during backend integration.</p></div>
-                    <span class="rider-placeholder-badge">Preview</span>
+                    <div>
+                        <h3 th:text="${vehicle.model}">Vehicle model</h3>
+                        <p><span th:text="${vehicle.numberPlate}">Vehicle number plate</span> · <span th:text="${vehicle.seats}">0</span> seats</p>
+                        <p th:if="${vehicle.photoReference != null and !#strings.isEmpty(vehicle.photoReference)}" th:text="${vehicle.photoReference}">Vehicle photo reference</p>
+                    </div>
+                </div>
+                <div class="rider-vehicle-placeholder" th:unless="${vehicle != null}">
+                    <div class="rider-vehicle-icon" aria-hidden="true">▱</div>
+                    <div><h3>Vehicle information unavailable</h3><p>This driver has not added vehicle details yet.</p></div>
                 </div>
             </article>
         </div>
