@@ -11,6 +11,26 @@
         <h1>Rider dashboard</h1>
         <p>Your space for upcoming shared journeys.</p>
     </section>
+
+    <section class="dashboard-grid" aria-label="Rider actions">
+        <a class="dashboard-action dashboard-action--primary" th:href="@{/rider/search}">
+            <span class="dashboard-action-icon" aria-hidden="true">⌕</span>
+            <span>
+                <strong>Find a Ride</strong>
+                <small>Search available shared journeys</small>
+            </span>
+            <span class="dashboard-action-arrow" aria-hidden="true">→</span>
+        </a>
+
+        <a class="dashboard-action" th:href="@{/rider/bookings}">
+            <span class="dashboard-action-icon" aria-hidden="true">≡</span>
+            <span>
+                <strong>My Bookings</strong>
+                <small>View your requested and confirmed rides</small>
+            </span>
+            <span class="dashboard-action-arrow" aria-hidden="true">→</span>
+        </a>
+    </section>
 </main>
 
 <div th:replace="~{fragments/footer :: footer}"></div>

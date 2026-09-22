@@ -18,6 +18,7 @@ public interface RideRepository extends JpaRepository<Ride, Long> {
 
         @Query("""
             select ride from Ride ride
+          join fetch ride.driver
             where lower(trim(ride.source)) = lower(trim(:source))
               and lower(trim(ride.destination)) = lower(trim(:destination))
               and ride.departureTime >= :dayStart
