@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/header :: header}"></head>
+<body class="ride-page rider-page">
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<main class="ride-shell rider-bookings-shell">
+    <header class="ride-page-header">
+        <span class="ride-accent" aria-hidden="true"></span>
+        <p class="rider-eyebrow">RIDER BOOKINGS</p>
+        <h1>My Bookings</h1>
+        <p>Keep track of your requested and confirmed shared rides.</p>
+    </header>
+
+    <nav class="ride-status-tabs rider-booking-tabs" aria-label="Booking status filters">
+        <span class="ride-status-tab ride-status-tab--active">All bookings <b th:if="${bookings != null}" th:text="${#lists.size(bookings)}">0</b><b th:unless="${bookings != null}">4</b></span>
+        <span class="ride-status-tab">Pending</span>
+        <span class="ride-status-tab">Confirmed</span>
+        <span class="ride-status-tab">Past</span>
+    </nav>
+
+    <section class="ride-list rider-booking-list" th:if="${bookings != null and !#lists.isEmpty(bookings)}" aria-label="Your bookings">
+        <article class="ride-list-card rider-booking-card" th:each="booking : ${bookings}">
+            <div class="ride-card-main">
+                <div class="ride-route">
+                    <div class="ride-stop ride-stop--source"><span class="ride-stop-marker" aria-hidden="true"></span><h2 th:text="${booking.ride.source}">NIET, Greater Noida</h2></div>
+                    <div class="ride-route-connector" aria-hidden="true"></div>
+                    <div class="ride-stop ride-stop--destination"><span class="ride-stop-marker" aria-hidden="true"></span><h2 th:text="${booking.ride.destination}">Pari Chowk Metro</h2></div>
+                </div>
+                <span class="ride-status-badge"
+                      th:classappend="${booking.status != null ? ' ride-status-badge--' + #strings.toLowerCase(booking.status.name()) : ''}"
+                      th:text="${booking.status ?: 'PENDING'}">PENDING</span>
+            </div>
+
+            <div class="ride-card-meta rider-booking-meta">
+                <span class="ride-date"><strong th:text="${#temporals.format(booking.ride.departureTime, 'EEE, dd MMM')}">Thu, 20 Sep</strong><span aria-hidden="true">·</span><strong th:text="${#temporals.format(booking.ride.departureTime, 'hh:mm a')}">08:30 AM</strong></span>
+                <span>Driver: <b th:text="${booking.ride.driver.name}">Rahul Sharma</b></span>
+                <span><b th:text="${booking.seatsRequested}">1</b> seat requested</span>
+                <span><b>₹<span th:text="${booking.totalPrice}">150</span></b> total</span>
+            </div>
+
+            <div class="rider-booking-footer">
+                <span class="rider-booking-message" th:if="${booking.status != null and booking.status.name() == 'PENDING'}">Waiting for driver response</span>
+                <span class="rider-booking-message" th:if="${booking.status != null and booking.status.name() == 'CONFIRMED'}">Your seat is confirmed</span>
+                <span class="rider-booking-message" th:if="${booking.status != null and booking.status.name() == 'REJECTED'}">Driver declined the booking</span>
+                <span class="rider-booking-message" th:if="${booking.status != null and booking.status.name() == 'CANCELLED'}">Booking cancelled</span>
+                <a class="ride-button ride-button--secondary" th:href="@{/rider/ride/{id}(id=${booking.ride.id})}">View Ride</a>
+            </div>
+        </article>
+    </section>
+
+    <section class="ride-list rider-booking-list" th:unless="${bookings != null}">
+        <article class="ride-list-card rider-booking-card">
+            <div class="ride-card-main"><div class="ride-route"><div class="ride-stop ride-stop--source"><span class="ride-stop-marker" aria-hidden="true"></span><h2>NIET, Greater Noida</h2></div><div class="ride-route-connector" aria-hidden="true"></div><div class="ride-stop ride-stop--destination"><span class="ride-stop-marker" aria-hidden="true"></span><h2>Pari Chowk Metro</h2></div></div><span class="ride-status-badge ride-status-badge--confirmed">CONFIRMED</span></div>
+            <div class="ride-card-meta rider-booking-meta"><span class="ride-date"><strong>Thu, 20 Sep</strong><span aria-hidden="true">·</span><strong>08:30 AM</strong></span><span>Driver: <b>Rahul Sharma</b></span><span><b>1</b> seat requested</span><span><b>₹150</b> total</span></div>
+            <div class="rider-booking-footer"><span class="rider-booking-message">Your seat is confirmed</span><a class="ride-button ride-button--secondary" th:href="@{/rider/ride/{id}(id=1)}">View Ride</a></div>
+        </article>
+
+        <article class="ride-list-card rider-booking-card"><div class="ride-card-main"><div class="ride-route"><div class="ride-stop ride-stop--source"><span class="ride-stop-marker" aria-hidden="true"></span><h2>NIET, Greater Noida</h2></div><div class="ride-route-connector" aria-hidden="true"></div><div class="ride-stop ride-stop--destination"><span class="ride-stop-marker" aria-hidden="true"></span><h2>Noida City Centre</h2></div></div><span class="ride-status-badge ride-status-badge--pending">PENDING</span></div><div class="ride-card-meta rider-booking-meta"><span class="ride-date"><strong>Fri, 20 Sep</strong><span aria-hidden="true">·</span><strong>06:00 PM</strong></span><span>Driver: <b>Ananya Singh</b></span><span><b>1</b> seat requested</span><span><b>₹120</b> total</span></div><div class="rider-booking-footer"><span class="rider-booking-message">Waiting for driver response</span><a class="ride-button ride-button--secondary" th:href="@{/rider/ride/{id}(id=2)}">View Ride</a></div></article>
+
+        <article class="ride-list-card rider-booking-card"><div class="ride-card-main"><div class="ride-route"><div class="ride-stop ride-stop--source"><span class="ride-stop-marker" aria-hidden="true"></span><h2>NIET, Greater Noida</h2></div><div class="ride-route-connector" aria-hidden="true"></div><div class="ride-stop ride-stop--destination"><span class="ride-stop-marker" aria-hidden="true"></span><h2>Sector 62, Noida</h2></div></div><span class="ride-status-badge ride-status-badge--rejected">REJECTED</span></div><div class="ride-card-meta rider-booking-meta"><span class="ride-date"><strong>Sat, 21 Sep</strong><span aria-hidden="true">·</span><strong>09:15 AM</strong></span><span>Driver: <b>Vikram Kapoor</b></span><span><b>1</b> seat requested</span><span><b>₹135</b> total</span></div><div class="rider-booking-footer"><span class="rider-booking-message">Driver declined the booking</span><a class="ride-button ride-button--secondary" th:href="@{/rider/results}">Find another ride</a></div></article>
+
+        <article class="ride-list-card rider-booking-card"><div class="ride-card-main"><div class="ride-route"><div class="ride-stop ride-stop--source"><span class="ride-stop-marker" aria-hidden="true"></span><h2>NIET, Greater Noida</h2></div><div class="ride-route-connector" aria-hidden="true"></div><div class="ride-stop ride-stop--destination"><span class="ride-stop-marker" aria-hidden="true"></span><h2>Greater Noida West</h2></div></div><span class="ride-status-badge ride-status-badge--cancelled">CANCELLED</span></div><div class="ride-card-meta rider-booking-meta"><span class="ride-date"><strong>Mon, 23 Sep</strong><span aria-hidden="true">·</span><strong>07:45 AM</strong></span><span>Driver: <b>Meera Joshi</b></span><span><b>1</b> seat requested</span><span><b>₹100</b> total</span></div><div class="rider-booking-footer"><span class="rider-booking-message">Booking cancelled</span><a class="ride-button ride-button--secondary" th:href="@{/rider/results}">Find another ride</a></div></article>
+    </section>
+
+    <section class="ride-empty-state" th:if="${bookings != null and #lists.isEmpty(bookings)}" aria-label="No bookings found">
+        <div class="rider-empty-icon" aria-hidden="true">⌕</div>
+        <h2>No bookings yet</h2>
+        <p>When you request a seat, your booking status will appear here.</p>
+        <a class="ride-button ride-button--primary" th:href="@{/rider/search}">Find a ride</a>
+    </section>
+</main>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

@@ -12,13 +12,16 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -95,6 +98,51 @@ class RideServiceTest {
 
         assertEquals(RideStatus.CANCELLED, ride.getStatus());
         verify(rideRepository).save(ride);
+    }
+
+    @Test
+    void searchDefaultsToCurrentDateWhenDateIsNull() {
+        LocalDate today = LocalDate.now();
+        when(rideRepository.searchAvailable(
+                any(), any(), any(), any(), any()))
+                .thenReturn(List.of(new Ride()));
+
+        List<Ride> results = rideService.search(" Campus ", " Office ", null);
+
+        assertEquals(1, results.size());
+        verify(rideRepository).searchAvailable(
+                eq("Campus"),
+                eq("Office"),
+                eq(today.atStartOfDay()),
+                eq(today.plusDays(1).atStartOfDay()),
+                any(LocalDateTime.class));
+    }
+
+    @Test
+    void searchUsesExplicitDateWhenProvided() {
+        LocalDate targetDate = LocalDate.now().plusDays(2);
+        when(rideRepository.searchAvailable(
+                any(), any(), any(), any(), any()))
+                .thenReturn(List.of(new Ride()));
+
+        List<Ride> results = rideService.search(" Campus ", " Office ", targetDate);
+
+        assertEquals(1, results.size());
+        verify(rideRepository).searchAvailable(
+                eq("Campus"),
+                eq("Office"),
+                eq(targetDate.atStartOfDay()),
+                eq(targetDate.plusDays(1).atStartOfDay()),
+                any(LocalDateTime.class));
+    }
+
+    @Test
+    void searchReturnsEmptyWhenSourceOrDestinationMissing() {
+        assertEquals(List.of(), rideService.search(null, "Office", null));
+        assertEquals(List.of(), rideService.search("   ", "Office", null));
+        assertEquals(List.of(), rideService.search("Campus", null, null));
+        assertEquals(List.of(), rideService.search("Campus", "   ", null));
+        org.mockito.Mockito.verifyNoInteractions(rideRepository);
     }
 
     private User driver(String email) {
