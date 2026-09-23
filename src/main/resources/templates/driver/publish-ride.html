@@ -26,31 +26,14 @@
                     <p class="ride-field-error" th:if="${#fields.hasErrors('routeDistinct')}" th:errors="*{routeDistinct}"></p>
                 </div>
             </div>
-            <div class="ride-route-fields">
-                <div class="ride-field">
-                    <label for="sourceLatitude">Starting point latitude</label>
-                    <input id="sourceLatitude" type="number" th:field="*{sourceLatitude}" min="-90" max="90" step="any">
-                    <p class="ride-field-error" th:if="${#fields.hasErrors('sourceLatitude')}" th:errors="*{sourceLatitude}"></p>
-                </div>
-                <div class="ride-field">
-                    <label for="sourceLongitude">Starting point longitude</label>
-                    <input id="sourceLongitude" type="number" th:field="*{sourceLongitude}" min="-180" max="180" step="any">
-                    <p class="ride-field-error" th:if="${#fields.hasErrors('sourceLongitude')}" th:errors="*{sourceLongitude}"></p>
-                </div>
-                <div class="ride-field">
-                    <label for="destinationLatitude">Destination latitude</label>
-                    <input id="destinationLatitude" type="number" th:field="*{destinationLatitude}" min="-90" max="90" step="any">
-                    <p class="ride-field-error" th:if="${#fields.hasErrors('destinationLatitude')}" th:errors="*{destinationLatitude}"></p>
-                </div>
-                <div class="ride-field">
-                    <label for="destinationLongitude">Destination longitude</label>
-                    <input id="destinationLongitude" type="number" th:field="*{destinationLongitude}" min="-180" max="180" step="any">
-                    <p class="ride-field-error" th:if="${#fields.hasErrors('destinationLongitude')}" th:errors="*{destinationLongitude}"></p>
-                </div>
-            </div>
+            <input id="sourceLatitude" type="hidden" th:field="*{sourceLatitude}">
+            <input id="sourceLongitude" type="hidden" th:field="*{sourceLongitude}">
+            <input id="destinationLatitude" type="hidden" th:field="*{destinationLatitude}">
+            <input id="destinationLongitude" type="hidden" th:field="*{destinationLongitude}">
             <p class="ride-field-error" th:if="${#fields.hasErrors('coordinatePairComplete')}" th:errors="*{coordinatePairComplete}"></p>
             <div class="ride-location-picker"
                  data-ride-location-picker
+                 data-use-current-location="true"
                  data-source-latitude=""
                  data-source-longitude=""
                  data-destination-latitude=""
@@ -68,6 +51,7 @@
                 <p class="ride-location-picker-status" data-location-status aria-live="polite">Select a location to begin.</p>
                 <p class="ride-location-picker-route" data-location-route aria-live="polite"></p>
                 <div class="ride-location-map" data-location-map aria-label="Map for selecting ride locations"></div>
+                <p>Map data © OpenStreetMap contributors.</p>
             </div>
         </section>
         <section class="ride-form-card">

@@ -292,6 +292,33 @@ body {
     overflow: hidden;
 }
 
+.driver-location-session {
+    width: 100%;
+    margin-bottom: 12px;
+    padding: 14px;
+    border: 1px solid var(--kl-border);
+    border-radius: var(--kl-radius);
+    background: var(--kl-cloud);
+}
+
+.driver-location-map {
+    height: 220px;
+    border: 1px solid var(--kl-border);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.driver-location-status {
+    margin: 8px 0;
+    color: var(--kl-slate);
+    font-size: 11px;
+}
+
+.driver-location-actions {
+    display: flex;
+    gap: 8px;
+}
+
 .ride-field input:focus {
     outline: 2px solid rgba(242, 169, 59, .35);
     outline-offset: 1px;

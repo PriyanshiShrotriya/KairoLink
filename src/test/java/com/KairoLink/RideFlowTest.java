@@ -84,6 +84,20 @@ class RideFlowTest {
     }
 
     @Test
+    void publishPageHidesCoordinateInputs() throws Exception {
+        mockMvc.perform(get("/rides/new").with(user("publish-driver").roles("DRIVER")))
+                .andExpect(status().isOk())
+                .andExpect(content().string(org.hamcrest.Matchers.containsString(
+                        "id=\"sourceLatitude\" type=\"hidden\"")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString(
+                        "id=\"destinationLongitude\" type=\"hidden\"")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString(
+                        "id=\"source\" type=\"text\"")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString(
+                        "data-use-current-location=\"true\"")));
+    }
+
+    @Test
     @Transactional
     void driverCanPublishRideWithCoordinates() throws Exception {
         User driver = saveUser("coordinate-driver@example.com", Role.DRIVER);

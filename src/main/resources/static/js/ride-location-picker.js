@@ -30,6 +30,13 @@
     var activeTarget = null;
     var routeRequest = 0;
     var routeSource = "route";
+    var sourceManuallySelected = false;
+    var sourceTextManuallyEdited = false;
+    var geocodingEnabled = picker.dataset.useCurrentLocation === "true";
+    var geocodingRequest = {source: 0, destination: 0};
+    var destinationSearchTimer = null;
+    var sourceInput = document.getElementById("source");
+    var destinationInput = document.getElementById("destination");
 
     function numberFromField(field) {
         if (!field || field.value.trim() === "") {
@@ -96,15 +103,129 @@
             .addTo(map);
     }
 
-    function setLocation(target, coordinates) {
+    function setLocation(target, coordinates, statusMessage) {
         var field = fields[target];
         field.latitude.value = coordinates[1].toFixed(6);
         field.longitude.value = coordinates[0].toFixed(6);
         setMarker(target, coordinates);
         map.flyTo({center: coordinates, essential: true});
-        updateStatus(targets[target].charAt(0).toUpperCase() + targets[target].slice(1)
-            + " set. Select another point or location.");
+        updateStatus(statusMessage || (targets[target].charAt(0).toUpperCase()
+            + targets[target].slice(1) + " set. Select another point or location."));
         requestRoute();
+    }
+
+    function setGeocodedLocation(target, location, requestId) {
+        if (requestId !== geocodingRequest[target]) {
+            return;
+        }
+        var coordinates = [location.longitude, location.latitude];
+        var field = fields[target];
+        field.latitude.value = Number(coordinates[1]).toFixed(6);
+        field.longitude.value = Number(coordinates[0]).toFixed(6);
+        setMarker(target, coordinates);
+        map.flyTo({center: coordinates, essential: true});
+        if (target === "source" && !sourceTextManuallyEdited && location.displayName) {
+            sourceInput.value = location.displayName;
+        }
+        updateStatus(target === "source"
+            ? "Starting point found from your current location."
+            : "Destination location found. You can adjust it on the map.");
+        requestRoute();
+    }
+
+    function reverseGeocode(target, coordinates, statusMessage) {
+        var requestId = ++geocodingRequest[target];
+        fetch("/api/geocoding/reverse?latitude=" + encodeURIComponent(coordinates[1])
+            + "&longitude=" + encodeURIComponent(coordinates[0]))
+            .then(function (response) {
+                if (!response.ok) {
+                    throw new Error("Reverse geocoding failed");
+                }
+                return response.json();
+            })
+            .then(function (location) {
+                if (requestId !== geocodingRequest[target]) {
+                    return;
+                }
+                setGeocodedLocation(target, location, requestId);
+            })
+            .catch(function () {
+                if (requestId === geocodingRequest[target]) {
+                    updateStatus(statusMessage);
+                }
+            });
+    }
+
+    function clearDestinationCoordinates() {
+        geocodingRequest.destination++;
+        fields.destination.latitude.value = "";
+        fields.destination.longitude.value = "";
+        if (markers.destination) {
+            markers.destination.remove();
+            delete markers.destination;
+        }
+        requestRoute();
+    }
+
+    function searchDestination() {
+        var query = destinationInput.value.trim();
+        if (!query) {
+            clearDestinationCoordinates();
+            return;
+        }
+        var requestId = ++geocodingRequest.destination;
+        fetch("/api/geocoding/search?query=" + encodeURIComponent(query))
+            .then(function (response) {
+                if (!response.ok) {
+                    throw new Error("Destination geocoding failed");
+                }
+                return response.json();
+            })
+            .then(function (location) {
+                setGeocodedLocation("destination", location, requestId);
+            })
+            .catch(function () {
+                if (requestId === geocodingRequest.destination) {
+                    updateStatus("Destination location was not found. Select it on the map.");
+                }
+            });
+    }
+
+    function scheduleDestinationSearch() {
+        if (destinationSearchTimer !== null) {
+            window.clearTimeout(destinationSearchTimer);
+        }
+        destinationSearchTimer = window.setTimeout(searchDestination, 500);
+    }
+
+    function useCurrentLocationForSource() {
+        if (picker.dataset.useCurrentLocation !== "true") {
+            return;
+        }
+        if (!navigator.geolocation) {
+            updateStatus("Current location is not supported. Select the starting point on the map.");
+            return;
+        }
+
+        navigator.geolocation.getCurrentPosition(function (position) {
+            if (sourceManuallySelected) {
+                return;
+            }
+            var coordinates = [position.coords.longitude, position.coords.latitude];
+            setLocation("source", coordinates,
+                "Current location used as starting point. Finding the address...");
+            reverseGeocode("source", coordinates,
+                "Current location set. Select the starting point on the map if needed.");
+        }, function (error) {
+            if (sourceManuallySelected) {
+                return;
+            }
+            if (error.code === error.PERMISSION_DENIED) {
+                updateStatus("Current location permission was denied. Select the starting point on the map.");
+            } else {
+                updateStatus("Current location is unavailable. Select the starting point on the map.");
+            }
+        }, {enableHighAccuracy: true, maximumAge: 10000, timeout: 15000});
     }
 
     function formatDuration(seconds) {
@@ -200,7 +321,18 @@
             updateStatus("Choose starting point or destination before clicking the map.");
             return;
         }
+        if (activeTarget === "source") {
+            sourceManuallySelected = true;
+            geocodingRequest.source++;
+        }
+        if (activeTarget === "destination") {
+            geocodingRequest.destination++;
+        }
         setLocation(activeTarget, [event.lngLat.lng, event.lngLat.lat]);
+        if (geocodingEnabled) {
+            reverseGeocode(activeTarget, [event.lngLat.lng, event.lngLat.lat],
+                "Location selected on the map. You can continue or try again.");
+        }
         activeTarget = null;
         targetButtons.forEach(function (button) {
             button.classList.remove("is-active");
@@ -216,4 +348,17 @@
         }
         requestRoute();
     });
+
+    if (geocodingEnabled) {
+        sourceInput.addEventListener("input", function () {
+            sourceTextManuallyEdited = true;
+        });
+        destinationInput.addEventListener("input", function () {
+            clearDestinationCoordinates();
+            scheduleDestinationSearch();
+        });
+        destinationInput.addEventListener("blur", searchDestination);
+    }
+
+    useCurrentLocationForSource();
 })();
