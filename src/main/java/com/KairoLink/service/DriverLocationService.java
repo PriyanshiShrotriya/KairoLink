@@ -3,11 +3,14 @@ package com.KairoLink.service;
 import com.KairoLink.dto.DriverLocationRequest;
 import com.KairoLink.dto.DriverLocationResponse;
 import com.KairoLink.entity.DriverLocation;
+import com.KairoLink.entity.BookingStatus;
 import com.KairoLink.entity.Ride;
 import com.KairoLink.entity.RideStatus;
+import com.KairoLink.entity.User;
 import com.KairoLink.exception.RideNotFoundException;
 import com.KairoLink.exception.UserNotFoundException;
 import com.KairoLink.repository.DriverLocationRepository;
+import com.KairoLink.repository.BookingRepository;
 import com.KairoLink.repository.RideRepository;
 import com.KairoLink.repository.UserRepository;
 import jakarta.transaction.Transactional;
@@ -22,14 +25,17 @@ public class DriverLocationService {
     private final UserRepository userRepository;
     private final RideRepository rideRepository;
     private final DriverLocationRepository locationRepository;
+    private final BookingRepository bookingRepository;
 
     public DriverLocationService(
             UserRepository userRepository,
             RideRepository rideRepository,
-            DriverLocationRepository locationRepository) {
+            DriverLocationRepository locationRepository,
+            BookingRepository bookingRepository) {
         this.userRepository = userRepository;
         this.rideRepository = rideRepository;
         this.locationRepository = locationRepository;
+        this.bookingRepository = bookingRepository;
     }
 
     @Transactional
@@ -46,23 +52,37 @@ public class DriverLocationService {
 
     @Transactional
     public DriverLocationResponse getCurrent(String email, Long rideId) {
-        ongoingOwnedRide(email, rideId);
+        User user = findUser(email);
+        Ride ride = rideRepository.findById(rideId)
+                .orElseThrow(() -> new RideNotFoundException("Current driver location was not found"));
+        if (ride.getStatus() != RideStatus.ONGOING) {
+            throw new RideNotFoundException("Current driver location was not found");
+        }
+        boolean isDriver = ride.getDriver().getId().equals(user.getId());
+        boolean isConfirmedRider = bookingRepository.existsByRiderIdAndRideIdAndStatus(
+                user.getId(), rideId, BookingStatus.CONFIRMED);
+        if (!isDriver && !isConfirmedRider) {
+            throw new RideNotFoundException("Current driver location was not found");
+        }
         return locationRepository.findByRideId(rideId)
                 .map(this::toResponse)
                 .orElseThrow(() -> new RideNotFoundException("Current driver location was not found"));
     }
 
     private Ride ongoingOwnedRide(String email, Long rideId) {
-        String normalizedEmail = normalizeEmail(email);
-        Long driverId = userRepository.findByEmail(normalizedEmail)
-                .orElseThrow(() -> new UserNotFoundException("Authenticated user was not found"))
-                .getId();
+        Long driverId = findUser(email).getId();
         Ride ride = rideRepository.findByIdAndDriverId(rideId, driverId)
                 .orElseThrow(() -> new RideNotFoundException("Ride was not found"));
         if (ride.getStatus() != RideStatus.ONGOING) {
             throw new RideNotFoundException("Location is available only for ongoing rides");
         }
         return ride;
+    }
+
+    private User findUser(String email) {
+        String normalizedEmail = normalizeEmail(email);
+        return userRepository.findByEmail(normalizedEmail)
+                .orElseThrow(() -> new UserNotFoundException("Authenticated user was not found"));
     }
 
     private void validateCoordinates(DriverLocationRequest request) {
