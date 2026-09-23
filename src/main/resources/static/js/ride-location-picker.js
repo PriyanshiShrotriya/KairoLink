@@ -8,6 +8,7 @@
 
     var mapElement = picker.querySelector("[data-location-map]");
     var status = picker.querySelector("[data-location-status]");
+    var routeSummary = picker.querySelector("[data-location-route]");
     var targetButtons = picker.querySelectorAll("[data-location-target]");
     var fields = {
         source: {
@@ -27,6 +28,8 @@
     };
     var markers = {};
     var activeTarget = null;
+    var routeRequest = 0;
+    var routeSource = "route";
 
     function numberFromField(field) {
         if (!field || field.value.trim() === "") {
@@ -101,6 +104,89 @@
         map.flyTo({center: coordinates, essential: true});
         updateStatus(targets[target].charAt(0).toUpperCase() + targets[target].slice(1)
             + " set. Select another point or location.");
+        requestRoute();
+    }
+
+    function formatDuration(seconds) {
+        var minutes = Math.round(seconds / 60);
+        if (minutes < 60) {
+            return minutes + " min";
+        }
+        return Math.floor(minutes / 60) + " hr " + (minutes % 60) + " min";
+    }
+
+    function formatDistance(meters) {
+        return meters >= 1000
+            ? (meters / 1000).toFixed(1) + " km"
+            : Math.round(meters) + " m";
+    }
+
+    function requestRoute() {
+        var source = coordinatesFor("source");
+        var destination = coordinatesFor("destination");
+        if (!source || !destination) {
+            routeSummary.textContent = "";
+            removeRoute();
+            return;
+        }
+        var requestId = ++routeRequest;
+        routeSummary.textContent = "Calculating route...";
+        fetch("/api/routes?sourceLatitude=" + encodeURIComponent(source[1])
+            + "&sourceLongitude=" + encodeURIComponent(source[0])
+            + "&destinationLatitude=" + encodeURIComponent(destination[1])
+            + "&destinationLongitude=" + encodeURIComponent(destination[0]))
+            .then(function (response) {
+                if (!response.ok) {
+                    throw new Error("Route request failed");
+                }
+                return response.json();
+            })
+            .then(function (route) {
+                if (requestId !== routeRequest) {
+                    return;
+                }
+                if (!Array.isArray(route.geometry) || route.geometry.length < 2) {
+                    throw new Error("Route geometry was invalid");
+                }
+                drawRoute(route.geometry);
+                routeSummary.textContent = formatDistance(route.distanceMeters)
+                    + " · approximately " + formatDuration(route.durationSeconds);
+            })
+            .catch(function () {
+                if (requestId !== routeRequest) {
+                    return;
+                }
+                removeRoute();
+                routeSummary.textContent = "Route preview is unavailable. You can still save the ride.";
+            });
+    }
+
+    function drawRoute(coordinates) {
+        var source = map.getSource(routeSource);
+        var data = {
+            type: "Feature",
+            geometry: {type: "LineString", coordinates: coordinates}
+        };
+        if (source) {
+            source.setData(data);
+            return;
+        }
+        map.addSource(routeSource, {type: "geojson", data: data});
+        map.addLayer({
+            id: routeSource,
+            type: "line",
+            source: routeSource,
+            paint: {"line-color": "#1b2a4a", "line-width": 4, "line-opacity": 0.8}
+        });
+    }
+
+    function removeRoute() {
+        if (map.getLayer(routeSource)) {
+            map.removeLayer(routeSource);
+        }
+        if (map.getSource(routeSource)) {
+            map.removeSource(routeSource);
+        }
     }
 
     targetButtons.forEach(function (button) {
@@ -128,5 +214,6 @@
         if (destinationCoordinates) {
             setMarker("destination", destinationCoordinates);
         }
+        requestRoute();
     });
 })();

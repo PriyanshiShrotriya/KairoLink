@@ -253,10 +253,17 @@ body {
 }
 
 .ride-location-picker-header p,
-.ride-location-picker-status {
+.ride-location-picker-status,
+.ride-location-picker-route {
     margin: 6px 0 0;
     color: var(--kl-slate);
     font-size: 11px;
+}
+
+.ride-location-picker-route {
+    min-height: 16px;
+    color: var(--kl-indigo);
+    font-weight: 600;
 }
 
 .ride-location-picker-actions {
