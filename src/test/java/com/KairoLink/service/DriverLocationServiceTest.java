@@ -8,6 +8,7 @@ import com.KairoLink.entity.RideStatus;
 import com.KairoLink.entity.User;
 import com.KairoLink.exception.RideNotFoundException;
 import com.KairoLink.repository.DriverLocationRepository;
+import com.KairoLink.repository.BookingRepository;
 import com.KairoLink.repository.RideRepository;
 import com.KairoLink.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -30,6 +31,7 @@ class DriverLocationServiceTest {
     private UserRepository userRepository;
     private RideRepository rideRepository;
     private DriverLocationRepository locationRepository;
+    private BookingRepository bookingRepository;
     private DriverLocationService locationService;
 
     @BeforeEach
@@ -37,8 +39,9 @@ class DriverLocationServiceTest {
         userRepository = mock(UserRepository.class);
         rideRepository = mock(RideRepository.class);
         locationRepository = mock(DriverLocationRepository.class);
+        bookingRepository = mock(BookingRepository.class);
         locationService = new DriverLocationService(
-                userRepository, rideRepository, locationRepository);
+                userRepository, rideRepository, locationRepository, bookingRepository);
     }
 
     @Test

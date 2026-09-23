@@ -4,6 +4,9 @@ import com.KairoLink.entity.Ride;
 import com.KairoLink.entity.RideStatus;
 import com.KairoLink.entity.Role;
 import com.KairoLink.entity.User;
+import com.KairoLink.entity.Booking;
+import com.KairoLink.entity.BookingStatus;
+import com.KairoLink.repository.BookingRepository;
 import com.KairoLink.repository.DriverLocationRepository;
 import com.KairoLink.repository.RideRepository;
 import com.KairoLink.repository.UserRepository;
@@ -44,6 +47,9 @@ class DriverLocationFlowTest {
     private DriverLocationRepository locationRepository;
 
     @Autowired
+    private BookingRepository bookingRepository;
+
+    @Autowired
     private PasswordEncoder passwordEncoder;
 
     @Test
@@ -70,6 +76,73 @@ class DriverLocationFlowTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.latitude").value(28.6139))
                 .andExpect(jsonPath("$.longitude").value(77.209));
+    }
+
+    @Test
+    @Transactional
+    void confirmedRiderCanRetrieveOngoingRideLocation() throws Exception {
+        User driver = saveUser("location-confirmed-driver@example.com");
+        User rider = saveRider("location-confirmed-rider@example.com");
+        Ride ride = saveRide(driver, RideStatus.ONGOING);
+        saveBooking(rider, ride, BookingStatus.CONFIRMED);
+        saveLocation(ride);
+
+        mockMvc.perform(get("/api/rides/" + ride.getId() + "/driver-location")
+                        .with(user(rider.getEmail()).roles("RIDER")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.latitude").value(28.6139));
+    }
+
+    @Test
+    @Transactional
+    void nonConfirmedOrUnrelatedRiderCannotRetrieveLocation() throws Exception {
+        User driver = saveUser("location-auth-driver@example.com");
+        User rider = saveRider("location-pending-rider@example.com");
+        User other = saveRider("location-unrelated-rider@example.com");
+        Ride ride = saveRide(driver, RideStatus.ONGOING);
+        saveBooking(rider, ride, BookingStatus.PENDING);
+        saveLocation(ride);
+
+        mockMvc.perform(get("/api/rides/" + ride.getId() + "/driver-location")
+                        .with(user(rider.getEmail()).roles("RIDER")))
+                .andExpect(status().isNotFound());
+        mockMvc.perform(get("/api/rides/" + ride.getId() + "/driver-location")
+                        .with(user(other.getEmail()).roles("RIDER")))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @Transactional
+    void confirmedRiderCannotRetrieveLocationForNonOngoingRide() throws Exception {
+        User driver = saveUser("location-lifecycle-driver@example.com");
+        User rider = saveRider("location-lifecycle-rider@example.com");
+        Ride ride = saveRide(driver, RideStatus.ACTIVE);
+        saveBooking(rider, ride, BookingStatus.CONFIRMED);
+        saveLocation(ride);
+
+        mockMvc.perform(get("/api/rides/" + ride.getId() + "/driver-location")
+                        .with(user(rider.getEmail()).roles("RIDER")))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @Transactional
+    void rejectedOrCancelledRiderCannotRetrieveLocation() throws Exception {
+        User driver = saveUser("location-processed-driver@example.com");
+        User rider = saveRider("location-processed-rider@example.com");
+        Ride ride = saveRide(driver, RideStatus.ONGOING);
+        Booking booking = saveBooking(rider, ride, BookingStatus.REJECTED);
+        saveLocation(ride);
+
+        mockMvc.perform(get("/api/rides/" + ride.getId() + "/driver-location")
+                        .with(user(rider.getEmail()).roles("RIDER")))
+                .andExpect(status().isNotFound());
+
+        booking.setStatus(BookingStatus.CANCELLED);
+        bookingRepository.saveAndFlush(booking);
+        mockMvc.perform(get("/api/rides/" + ride.getId() + "/driver-location")
+                        .with(user(rider.getEmail()).roles("RIDER")))
+                .andExpect(status().isNotFound());
     }
 
     @Test
@@ -119,13 +192,39 @@ class DriverLocationFlowTest {
     }
 
     private User saveUser(String email) {
+        return saveUser(email, Role.DRIVER);
+    }
+
+    private User saveUser(String email, Role role) {
         User user = new User();
         user.setName("Location Driver");
         user.setEmail(email);
         user.setPasswordHash(passwordEncoder.encode("ValidPass1"));
-        user.setRoles(Set.of(Role.DRIVER));
+        user.setRoles(Set.of(role));
         user.setEnabled(true);
         return userRepository.saveAndFlush(user);
+    }
+
+    private User saveRider(String email) {
+        return saveUser(email, Role.RIDER);
+    }
+
+    private Booking saveBooking(User rider, Ride ride, BookingStatus status) {
+        Booking booking = new Booking();
+        booking.setRider(rider);
+        booking.setRide(ride);
+        booking.setStatus(status);
+        booking.setSeatsRequested(1);
+        booking.setTotalPrice(BigDecimal.ZERO);
+        return bookingRepository.saveAndFlush(booking);
+    }
+
+    private void saveLocation(Ride ride) {
+        com.KairoLink.entity.DriverLocation location = new com.KairoLink.entity.DriverLocation();
+        location.setRide(ride);
+        location.setLatitude(new BigDecimal("28.613900"));
+        location.setLongitude(new BigDecimal("77.209000"));
+        locationRepository.saveAndFlush(location);
     }
 
     private Ride saveRide(User driver, RideStatus status) {
