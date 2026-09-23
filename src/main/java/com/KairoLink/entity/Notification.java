@@ -51,6 +51,9 @@ public class Notification {
     @Column(name = "is_read", nullable = false)
     private boolean read;
 
+    @Column(name = "booking_id")
+    private Long bookingId;
+
     @Column(nullable = false, updatable = false)
     private Instant createdAt;
 

@@ -26,6 +26,9 @@
             <a href="/#safety">About</a>
             <a sec:authorize="isAuthenticated()" th:href="@{/dashboard}">Dashboard</a>
             <a sec:authorize="isAuthenticated()" th:href="@{/profile}">Profile</a>
+            <a sec:authorize="isAuthenticated()" th:href="@{/notifications}">
+                Notifications<span th:if="${unreadCount > 0}" th:text="${' (' + unreadCount + ')'}"></span>
+            </a>
             <a class="nav-sign-in" sec:authorize="isAnonymous()" th:href="@{/login}">Sign In</a>
             <a class="nav-sign-up" sec:authorize="isAnonymous()" th:href="@{/register}">Sign Up</a>
             <form sec:authorize="isAuthenticated()"

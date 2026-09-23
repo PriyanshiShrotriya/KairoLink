@@ -33,6 +33,16 @@ public class NotificationService {
             NotificationType type,
             String title,
             String message) {
+        return createNotification(receiverEmail, type, title, message, null);
+    }
+
+    @Transactional
+    public Notification createNotification(
+            String receiverEmail,
+            NotificationType type,
+            String title,
+            String message,
+            Long bookingId) {
         User receiver = findUser(receiverEmail);
         validateContent(type, title, message);
 
@@ -42,6 +52,7 @@ public class NotificationService {
         notification.setTitle(title.trim());
         notification.setMessage(message.trim());
         notification.setRead(false);
+        notification.setBookingId(bookingId);
         return notificationRepository.save(notification);
     }
 

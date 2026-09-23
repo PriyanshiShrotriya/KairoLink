@@ -762,6 +762,12 @@ footer {
     box-shadow: var(--kl-shadow-sm);
 }
 
+.ride-list-card--highlighted {
+    border-color: var(--kl-amber-dark);
+    border-top-color: var(--kl-amber-dark);
+    box-shadow: 0 0 0 3px rgba(242, 169, 59, .2), var(--kl-shadow-sm);
+}
+
 .ride-card-main {
     display: flex;
     align-items: flex-start;

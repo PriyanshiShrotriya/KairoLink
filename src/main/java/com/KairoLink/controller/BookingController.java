@@ -6,6 +6,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
 public class BookingController {
@@ -17,8 +18,12 @@ public class BookingController {
     }
 
     @GetMapping("/driver/bookings")
-    public String driverBookings(Authentication authentication, org.springframework.ui.Model model) {
+    public String driverBookings(
+            Authentication authentication,
+            @RequestParam(required = false) Long booking,
+            org.springframework.ui.Model model) {
         model.addAttribute("bookings", bookingService.findDriverBookings(authentication.getName()));
+        model.addAttribute("selectedBookingId", booking);
         return "driver/bookings";
     }
 
