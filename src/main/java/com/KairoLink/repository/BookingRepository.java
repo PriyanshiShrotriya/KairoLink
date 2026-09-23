@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -41,4 +42,10 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             Long riderId,
             Long rideId,
             Collection<BookingStatus> statuses);
+
+    @Query("""
+        select count(booking) from Booking booking
+        where booking.createdAt >= :startOfWeek
+        """)
+    long countBookingsCreatedAfter(@Param("startOfWeek") Instant startOfWeek);
 }

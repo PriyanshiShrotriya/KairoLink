@@ -11,6 +11,23 @@
         <h1>Admin dashboard</h1>
         <p>Your space for monitoring the KairoLink platform.</p>
     </section>
+
+    <section class="dashboard-metrics">
+        <div class="metric-card">
+            <h2>Total Users</h2>
+            <p class="metric-value" th:text="${totalUsers}">0</p>
+        </div>
+
+        <div class="metric-card">
+            <h2>Active Rides</h2>
+            <p class="metric-value" th:text="${activeRides}">0</p>
+        </div>
+
+        <div class="metric-card">
+            <h2>Bookings This Week</h2>
+            <p class="metric-value" th:text="${bookingsThisWeek}">0</p>
+        </div>
+    </section>
 </main>
 
 <div th:replace="~{fragments/footer :: footer}"></div>
