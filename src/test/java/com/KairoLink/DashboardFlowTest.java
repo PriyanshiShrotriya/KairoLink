@@ -49,10 +49,12 @@ class DashboardFlowTest {
                 .andExpect(view().name("dashboard/rider"));
 
         mockMvc.perform(get("/dashboard/driver").with(user("rider").roles("RIDER")))
-                .andExpect(status().isForbidden());
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/dashboard"));
 
         mockMvc.perform(get("/dashboard/admin").with(user("rider").roles("RIDER")))
-                .andExpect(status().isForbidden());
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/dashboard"));
     }
 
     @Test
@@ -62,10 +64,12 @@ class DashboardFlowTest {
                 .andExpect(view().name("dashboard/driver"));
 
         mockMvc.perform(get("/dashboard/rider").with(user("driver").roles("DRIVER")))
-                .andExpect(status().isForbidden());
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/dashboard"));
 
         mockMvc.perform(get("/dashboard/admin").with(user("driver").roles("DRIVER")))
-                .andExpect(status().isForbidden());
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/dashboard"));
     }
 
     @Test
@@ -75,10 +79,12 @@ class DashboardFlowTest {
                 .andExpect(view().name("dashboard/admin"));
 
         mockMvc.perform(get("/dashboard/rider").with(user("admin").roles("ADMIN")))
-                .andExpect(status().isForbidden());
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/dashboard"));
 
         mockMvc.perform(get("/dashboard/driver").with(user("admin").roles("ADMIN")))
-                .andExpect(status().isForbidden());
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/dashboard"));
     }
 
     @Test

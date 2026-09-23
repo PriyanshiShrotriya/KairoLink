@@ -54,7 +54,8 @@ class RideFlowTest {
     @Test
     void riderCannotAccessRideManagement() throws Exception {
         mockMvc.perform(get("/rides").with(user("rider").roles("RIDER")))
-                .andExpect(status().isForbidden());
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/dashboard"));
     }
 
     @Test

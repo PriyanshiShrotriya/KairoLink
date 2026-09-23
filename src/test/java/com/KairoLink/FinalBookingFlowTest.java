@@ -76,6 +76,24 @@ class FinalBookingFlowTest {
 
     @Test
     @Transactional
+    void acceptingAllRemainingSeatsReturnsConflictWithoutDatabaseError() throws Exception {
+        User driver = saveUser("boundary-driver@example.com", Role.DRIVER);
+        User rider = saveUser("boundary-rider@example.com", Role.RIDER);
+        Ride ride = saveRide(driver, 2);
+        Booking booking = saveBooking(rider, ride, BookingStatus.PENDING, 2);
+
+        mockMvc.perform(post("/driver/bookings/" + booking.getId() + "/accept")
+                        .with(user(driver.getEmail()).roles("DRIVER"))
+                        .with(csrf()))
+                .andExpect(status().isConflict());
+
+        assertEquals(BookingStatus.PENDING,
+                bookingRepository.findById(booking.getId()).orElseThrow().getStatus());
+        assertEquals(2, rideRepository.findById(ride.getId()).orElseThrow().getSeats());
+    }
+
+    @Test
+    @Transactional
     void riderSeesOnlyOwnBookingsAndDriverManagementIsRoleProtected() throws Exception {
         User driver = saveUser("visibility-driver@example.com", Role.DRIVER);
         User rider = saveUser("visibility-rider@example.com", Role.RIDER);
@@ -91,10 +109,12 @@ class FinalBookingFlowTest {
                         .attribute("bookings", org.hamcrest.Matchers.hasSize(1)));
 
         mockMvc.perform(get("/driver/bookings").with(user(rider.getEmail()).roles("RIDER")))
-                .andExpect(status().isForbidden());
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/dashboard"));
 
         mockMvc.perform(get("/rider/bookings").with(user(driver.getEmail()).roles("DRIVER")))
-                .andExpect(status().isForbidden());
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/dashboard"));
     }
 
     @Test
