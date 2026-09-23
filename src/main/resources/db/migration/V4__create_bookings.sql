@@ -5,6 +5,9 @@ CREATE TABLE bookings (
     status VARCHAR(20) NOT NULL,
     seats_requested INTEGER NOT NULL,
     total_price NUMERIC(10, 2) NOT NULL,
+    active_booking_key BOOLEAN GENERATED ALWAYS AS (
+        CASE WHEN status IN ('PENDING', 'CONFIRMED') THEN TRUE ELSE NULL END
+    ) ${booking_column_storage},
     created_at TIMESTAMP(6) WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP(6) WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
@@ -35,5 +38,4 @@ CREATE INDEX idx_bookings_status
     ON bookings (status);
 
 CREATE UNIQUE INDEX uk_bookings_active_rider_ride
-    ON bookings (rider_id, ride_id)
-    WHERE status IN ('PENDING', 'CONFIRMED');
+    ON bookings (rider_id, ride_id, active_booking_key);
