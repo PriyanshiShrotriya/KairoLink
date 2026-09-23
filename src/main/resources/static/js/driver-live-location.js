@@ -17,6 +17,14 @@
         var updateTimer = null;
         var latestPosition = null;
         var marker = null;
+        var routeSource = "ride-route";
+        function coordinateValue(value) {
+            return value === undefined || value.trim() === "" ? null : Number(value);
+        }
+        var sourceLatitude = coordinateValue(session.dataset.sourceLatitude);
+        var sourceLongitude = coordinateValue(session.dataset.sourceLongitude);
+        var destinationLatitude = coordinateValue(session.dataset.destinationLatitude);
+        var destinationLongitude = coordinateValue(session.dataset.destinationLongitude);
         var map = new maplibregl.Map({
             container: mapElement,
             center: [77.5025, 28.4595],
@@ -42,6 +50,56 @@
 
         function setStatus(message) {
             status.textContent = message;
+        }
+
+        function hasRouteCoordinates() {
+            return Number.isFinite(sourceLatitude) && Number.isFinite(sourceLongitude)
+                && Number.isFinite(destinationLatitude) && Number.isFinite(destinationLongitude);
+        }
+
+        function drawRoute(coordinates) {
+            var source = map.getSource(routeSource);
+            var data = {
+                type: "Feature",
+                geometry: {type: "LineString", coordinates: coordinates}
+            };
+            if (source) {
+                source.setData(data);
+                return;
+            }
+            map.addSource(routeSource, {type: "geojson", data: data});
+            map.addLayer({
+                id: routeSource,
+                type: "line",
+                source: routeSource,
+                paint: {"line-color": "#1b2a4a", "line-width": 4, "line-opacity": 0.8}
+            });
+        }
+
+        function loadRoute() {
+            if (!hasRouteCoordinates()) {
+                setStatus("Route coordinates are unavailable. Location sharing is off.");
+                return;
+            }
+            fetch("/api/routes?sourceLatitude=" + encodeURIComponent(sourceLatitude)
+                + "&sourceLongitude=" + encodeURIComponent(sourceLongitude)
+                + "&destinationLatitude=" + encodeURIComponent(destinationLatitude)
+                + "&destinationLongitude=" + encodeURIComponent(destinationLongitude))
+                .then(function (response) {
+                    if (!response.ok) {
+                        throw new Error("Route request failed");
+                    }
+                    return response.json();
+                })
+                .then(function (route) {
+                    if (!Array.isArray(route.geometry) || route.geometry.length < 2) {
+                        throw new Error("Route geometry was invalid");
+                    }
+                    drawRoute(route.geometry);
+                })
+                .catch(function () {
+                    setStatus("Route preview is unavailable. Location sharing is still available.");
+                });
         }
 
         function showPosition(position) {
@@ -156,5 +214,7 @@
 
         startButton.addEventListener("click", startSharing);
         stopButton.addEventListener("click", stopSharing);
+        window.addEventListener("pagehide", stopSharing);
+        map.on("load", loadRoute);
     });
 })();

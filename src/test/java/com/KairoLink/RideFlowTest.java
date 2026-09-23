@@ -243,6 +243,28 @@ class RideFlowTest {
 
     @Test
     @Transactional
+    void ongoingRidePageIncludesRouteCoordinatesForLiveMap() throws Exception {
+        User owner = saveUser("ongoing-map@example.com", Role.DRIVER);
+        Ride ride = saveRide(owner, LocalDateTime.now().plusDays(1));
+        ride.setStatus(RideStatus.ONGOING);
+        ride.setSourceLatitude(new BigDecimal("28.613900"));
+        ride.setSourceLongitude(new BigDecimal("77.209000"));
+        ride.setDestinationLatitude(new BigDecimal("28.535500"));
+        ride.setDestinationLongitude(new BigDecimal("77.391000"));
+        rideRepository.saveAndFlush(ride);
+
+        mockMvc.perform(get("/rides").with(user(owner.getEmail()).roles("DRIVER")))
+                .andExpect(status().isOk())
+                .andExpect(content().string(org.hamcrest.Matchers.containsString(
+                        "data-source-latitude=\"28.613900\"")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString(
+                        "data-destination-longitude=\"77.391000\"")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString(
+                        "data-driver-location-session")));
+    }
+
+    @Test
+    @Transactional
     void driverCanCompleteOngoingRide() throws Exception {
         User owner = saveUser("complete-ride@example.com", Role.DRIVER);
         Ride ride = saveRide(owner, LocalDateTime.now().plusDays(1));

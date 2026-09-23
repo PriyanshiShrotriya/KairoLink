@@ -84,7 +84,11 @@
                  th:if="${ride.status.name() == 'ONGOING'}">
                 <div class="driver-location-session"
                      data-driver-location-session
-                     th:attr="data-ride-id=${ride.id}">
+                     th:attr="data-ride-id=${ride.id},
+                              data-source-latitude=${ride.sourceLatitude},
+                              data-source-longitude=${ride.sourceLongitude},
+                              data-destination-latitude=${ride.destinationLatitude},
+                              data-destination-longitude=${ride.destinationLongitude}">
                     <input type="hidden"
                            data-location-csrf
                            th:name="${_csrf.parameterName}"
