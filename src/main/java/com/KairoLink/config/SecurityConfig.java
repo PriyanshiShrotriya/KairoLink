@@ -20,6 +20,7 @@ public class SecurityConfig {
                         .requestMatchers("/dashboard/rider").hasRole("RIDER")
                         .requestMatchers("/dashboard/driver").hasRole("DRIVER")
                         .requestMatchers("/dashboard/admin").hasRole("ADMIN")
+                        .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/rider/**").hasRole("RIDER")
                         .requestMatchers("/driver/bookings/**").hasRole("DRIVER")
                         .requestMatchers("/vehicle/**").hasRole("DRIVER")
