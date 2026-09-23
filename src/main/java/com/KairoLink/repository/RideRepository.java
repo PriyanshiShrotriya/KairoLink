@@ -59,4 +59,14 @@ public interface RideRepository extends JpaRepository<Ride, Long> {
         order by ride.departureTime desc
         """)
     List<Ride> findAllRidesWithDriver();
+
+    /**
+     * Returns [RideStatus, count] pairs for the ride-status doughnut chart.
+     */
+    @Query("""
+        select ride.status, count(ride)
+        from Ride ride
+        group by ride.status
+        """)
+    List<Object[]> countByStatusGrouped();
 }

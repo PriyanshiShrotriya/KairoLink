@@ -27,4 +27,14 @@ public interface IssueReportRepository extends JpaRepository<IssueReport, Long> 
         order by report.createdAt desc
         """)
     List<IssueReport> findByReporterIdWithDetails(@Param("reporterId") Long reporterId);
+
+    /**
+     * Returns [IssueStatus, count] pairs for the issue summary.
+     */
+    @Query("""
+        select report.status, count(report)
+        from IssueReport report
+        group by report.status
+        """)
+    List<Object[]> countByStatus();
 }

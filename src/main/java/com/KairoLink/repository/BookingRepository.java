@@ -57,4 +57,25 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
         order by booking.createdAt desc
         """)
     List<Booking> findAllBookingsWithDetails();
+
+    /**
+     * Returns bookings whose createdAt falls within [from, to) for the 7-day activity chart.
+     * Grouping by UTC date is done in Java to remain H2-compatible.
+     */
+    @Query("""
+        select booking.createdAt from Booking booking
+        where booking.createdAt >= :from
+          and booking.createdAt < :to
+        """)
+    List<Instant> findCreatedAtInRange(@Param("from") Instant from, @Param("to") Instant to);
+
+    /**
+     * Returns [BookingStatus, count] pairs for the booking-status doughnut chart.
+     */
+    @Query("""
+        select booking.status, count(booking)
+        from Booking booking
+        group by booking.status
+        """)
+    List<Object[]> countByStatus();
 }
