@@ -52,4 +52,11 @@ public interface RideRepository extends JpaRepository<Ride, Long> {
                 where ride.status = com.KairoLink.entity.RideStatus.ACTIVE
                 """)
             long countByStatusActive();
+
+    @Query("""
+        select ride from Ride ride
+        join fetch ride.driver
+        order by ride.departureTime desc
+        """)
+    List<Ride> findAllRidesWithDriver();
 }

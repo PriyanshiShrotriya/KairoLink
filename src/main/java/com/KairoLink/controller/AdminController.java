@@ -1,6 +1,10 @@
 package com.KairoLink.controller;
 
+import com.KairoLink.entity.Booking;
+import com.KairoLink.entity.Ride;
 import com.KairoLink.entity.User;
+import com.KairoLink.repository.BookingRepository;
+import com.KairoLink.repository.RideRepository;
 import com.KairoLink.service.UserManagementService;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -18,9 +22,16 @@ import java.util.List;
 public class AdminController {
 
     private final UserManagementService userManagementService;
+    private final RideRepository rideRepository;
+    private final BookingRepository bookingRepository;
 
-    public AdminController(UserManagementService userManagementService) {
+    public AdminController(
+            UserManagementService userManagementService,
+            RideRepository rideRepository,
+            BookingRepository bookingRepository) {
         this.userManagementService = userManagementService;
+        this.rideRepository = rideRepository;
+        this.bookingRepository = bookingRepository;
     }
 
     @GetMapping("/users")
@@ -71,4 +82,19 @@ public class AdminController {
         }
         return "redirect:/admin/users";
     }
+
+    @GetMapping("/rides")
+    public String listRides(Model model) {
+        List<Ride> rides = rideRepository.findAllRidesWithDriver();
+        model.addAttribute("rides", rides);
+        return "admin/rides";
+    }
+
+    @GetMapping("/bookings")
+    public String listBookings(Model model) {
+        List<Booking> bookings = bookingRepository.findAllBookingsWithDetails();
+        model.addAttribute("bookings", bookings);
+        return "admin/bookings";
+    }
 }
+

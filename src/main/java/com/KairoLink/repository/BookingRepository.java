@@ -48,4 +48,13 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
         where booking.createdAt >= :startOfWeek
         """)
     long countBookingsCreatedAfter(@Param("startOfWeek") Instant startOfWeek);
+
+    @Query("""
+        select booking from Booking booking
+        join fetch booking.ride ride
+        join fetch ride.driver
+        join fetch booking.rider
+        order by booking.createdAt desc
+        """)
+    List<Booking> findAllBookingsWithDetails();
 }
