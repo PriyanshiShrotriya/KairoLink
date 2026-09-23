@@ -233,6 +233,58 @@ body {
     font-size: 13px;
 }
 
+.ride-location-picker {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid var(--kl-border);
+}
+
+.ride-location-picker-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+}
+
+.ride-location-picker-header h3 {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: 13px;
+}
+
+.ride-location-picker-header p,
+.ride-location-picker-status {
+    margin: 6px 0 0;
+    color: var(--kl-slate);
+    font-size: 11px;
+}
+
+.ride-location-picker-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.ride-location-picker-actions .ride-button {
+    min-height: 34px;
+    padding: 7px 10px;
+    font-size: 10px;
+}
+
+.ride-location-picker-actions .ride-button.is-active {
+    border-color: var(--kl-indigo);
+    background: var(--kl-indigo);
+    color: var(--kl-surface);
+}
+
+.ride-location-map {
+    height: 340px;
+    margin-top: 12px;
+    border: 1px solid var(--kl-border);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
 .ride-field input:focus {
     outline: 2px solid rgba(242, 169, 59, .35);
     outline-offset: 1px;

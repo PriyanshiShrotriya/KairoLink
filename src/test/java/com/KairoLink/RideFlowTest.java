@@ -24,6 +24,7 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
@@ -129,6 +130,27 @@ class RideFlowTest {
                 .andExpect(view().name("driver/publish-ride"));
 
         assertEquals(0, rideRepository.count());
+    }
+
+    @Test
+    @Transactional
+    void editRidePageLoadsExistingCoordinatesIntoPicker() throws Exception {
+        User driver = saveUser("edit-coordinate-driver@example.com", Role.DRIVER);
+        Ride ride = saveRide(driver, LocalDateTime.now().plusDays(1));
+        ride.setSourceLatitude(new BigDecimal("28.613900"));
+        ride.setSourceLongitude(new BigDecimal("77.209000"));
+        ride.setDestinationLatitude(new BigDecimal("28.535500"));
+        ride.setDestinationLongitude(new BigDecimal("77.391000"));
+        rideRepository.saveAndFlush(ride);
+
+        mockMvc.perform(get("/rides/" + ride.getId() + "/edit")
+                        .with(user(driver.getEmail()).roles("DRIVER")))
+                .andExpect(status().isOk())
+                .andExpect(view().name("driver/edit-ride"))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString(
+                        "data-source-latitude=\"28.613900\"")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString(
+                        "data-destination-longitude=\"77.391000\"")));
     }
 
     @Test

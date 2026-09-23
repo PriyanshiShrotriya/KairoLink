@@ -49,6 +49,25 @@
                 </div>
             </div>
             <p class="ride-field-error" th:if="${#fields.hasErrors('coordinatePairComplete')}" th:errors="*{coordinatePairComplete}"></p>
+            <div class="ride-location-picker"
+                 data-ride-location-picker
+                 data-source-latitude=""
+                 data-source-longitude=""
+                 data-destination-latitude=""
+                 data-destination-longitude="">
+                <div class="ride-location-picker-header">
+                    <div>
+                        <h3>Choose locations on the map</h3>
+                        <p>Select a point, then click the map to set it.</p>
+                    </div>
+                    <div class="ride-location-picker-actions" role="group" aria-label="Map location selection">
+                        <button type="button" class="ride-button ride-button--secondary" data-location-target="source">Set starting point</button>
+                        <button type="button" class="ride-button ride-button--secondary" data-location-target="destination">Set destination</button>
+                    </div>
+                </div>
+                <p class="ride-location-picker-status" data-location-status aria-live="polite">Select a location to begin.</p>
+                <div class="ride-location-map" data-location-map aria-label="Map for selecting ride locations"></div>
+            </div>
         </section>
         <section class="ride-form-card">
             <h2>Schedule</h2>
@@ -82,5 +101,7 @@
     </form>
 </main>
 <div th:replace="~{fragments/footer :: footer}"></div>
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<script th:src="@{/js/ride-location-picker.js}"></script>
 </body>
 </html>
