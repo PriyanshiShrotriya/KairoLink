@@ -25,6 +25,8 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     List<Booking> findByRideId(Long rideId);
 
+    List<Booking> findByRideIdAndStatus(Long rideId, BookingStatus status);
+
         @Query("""
             select booking from Booking booking
             join fetch booking.ride ride
@@ -41,4 +43,9 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             Long riderId,
             Long rideId,
             Collection<BookingStatus> statuses);
+
+    boolean existsByRiderIdAndRideIdAndStatus(
+            Long riderId,
+            Long rideId,
+            BookingStatus status);
 }

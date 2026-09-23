@@ -1,6 +1,7 @@
 package com.KairoLink.service;
 
 import com.KairoLink.entity.Rating;
+import com.KairoLink.entity.BookingStatus;
 import com.KairoLink.entity.Ride;
 import com.KairoLink.entity.RideStatus;
 import com.KairoLink.entity.User;
@@ -8,6 +9,7 @@ import com.KairoLink.exception.DuplicateRatingException;
 import com.KairoLink.exception.RideNotFoundException;
 import com.KairoLink.exception.UserNotFoundException;
 import com.KairoLink.repository.RatingRepository;
+import com.KairoLink.repository.BookingRepository;
 import com.KairoLink.repository.RideRepository;
 import com.KairoLink.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -32,6 +34,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 class RatingServiceTest {
 
     private RatingRepository ratingRepository;
+    private BookingRepository bookingRepository;
     private RideRepository rideRepository;
     private UserRepository userRepository;
     private RatingService ratingService;
@@ -39,9 +42,10 @@ class RatingServiceTest {
     @BeforeEach
     void setUp() {
         ratingRepository = mock(RatingRepository.class);
+        bookingRepository = mock(BookingRepository.class);
         rideRepository = mock(RideRepository.class);
         userRepository = mock(UserRepository.class);
-        ratingService = new RatingService(ratingRepository, rideRepository, userRepository);
+        ratingService = new RatingService(ratingRepository, rideRepository, userRepository, bookingRepository);
     }
 
     @Test
@@ -53,6 +57,8 @@ class RatingServiceTest {
         when(rideRepository.findById(10L)).thenReturn(Optional.of(ride));
         when(userRepository.findById(1L)).thenReturn(Optional.of(reviewer));
         when(userRepository.findById(2L)).thenReturn(Optional.of(reviewedUser));
+        when(bookingRepository.existsByRiderIdAndRideIdAndStatus(1L, 10L, BookingStatus.CONFIRMED))
+                .thenReturn(true);
         when(ratingRepository.existsByRideIdAndReviewerIdAndReviewedUserId(10L, 1L, 2L)).thenReturn(false);
         when(ratingRepository.save(any(Rating.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -77,6 +83,8 @@ class RatingServiceTest {
         when(rideRepository.findById(10L)).thenReturn(Optional.of(ride));
         when(userRepository.findById(1L)).thenReturn(Optional.of(reviewer));
         when(userRepository.findById(2L)).thenReturn(Optional.of(reviewedUser));
+        when(bookingRepository.existsByRiderIdAndRideIdAndStatus(1L, 10L, BookingStatus.CONFIRMED))
+                .thenReturn(true);
         when(ratingRepository.existsByRideIdAndReviewerIdAndReviewedUserId(10L, 1L, 2L)).thenReturn(false);
         when(ratingRepository.save(any(Rating.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -114,6 +122,8 @@ class RatingServiceTest {
         when(rideRepository.findById(10L)).thenReturn(Optional.of(ride));
         when(userRepository.findByEmail("rider@example.com")).thenReturn(Optional.of(reviewer));
         when(userRepository.findById(2L)).thenReturn(Optional.of(reviewedUser));
+        when(bookingRepository.existsByRiderIdAndRideIdAndStatus(1L, 10L, BookingStatus.CONFIRMED))
+                .thenReturn(true);
         when(ratingRepository.existsByRideIdAndReviewerIdAndReviewedUserId(10L, 1L, 2L)).thenReturn(false);
         when(ratingRepository.save(any(Rating.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -123,6 +133,43 @@ class RatingServiceTest {
         assertEquals("Good ride", rating.getComment());
         assertEquals(reviewer, rating.getReviewer());
         verify(ratingRepository).save(any(Rating.class));
+    }
+
+    @Test
+    void allowsDriverToRateConfirmedRider() {
+        Ride ride = ride(10L);
+        User driver = user(2L, "driver@example.com");
+        User rider = user(1L, "rider@example.com");
+
+        when(rideRepository.findById(10L)).thenReturn(Optional.of(ride));
+        when(userRepository.findByEmail("driver@example.com")).thenReturn(Optional.of(driver));
+        when(userRepository.findById(1L)).thenReturn(Optional.of(rider));
+        when(bookingRepository.existsByRiderIdAndRideIdAndStatus(1L, 10L, BookingStatus.CONFIRMED))
+                .thenReturn(true);
+        when(ratingRepository.existsByRideIdAndReviewerIdAndReviewedUserId(10L, 2L, 1L))
+                .thenReturn(false);
+        when(ratingRepository.save(any(Rating.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        Rating rating = ratingService.createRating("driver@example.com", 10L, 1L, 5, "Great rider");
+
+        assertEquals(driver, rating.getReviewer());
+        assertEquals(rider, rating.getReviewedUser());
+    }
+
+    @Test
+    void rejectsRiderRatingUnconfirmedOrNonDriverParticipant() {
+        Ride ride = ride(10L);
+        User rider = user(1L, "rider@example.com");
+        User otherUser = user(3L, "other@example.com");
+
+        when(rideRepository.findById(10L)).thenReturn(Optional.of(ride));
+        when(userRepository.findByEmail("rider@example.com")).thenReturn(Optional.of(rider));
+        when(userRepository.findById(3L)).thenReturn(Optional.of(otherUser));
+        when(bookingRepository.existsByRiderIdAndRideIdAndStatus(1L, 10L, BookingStatus.CONFIRMED))
+                .thenReturn(false);
+
+        assertThrows(IllegalArgumentException.class, () ->
+                ratingService.createRating("rider@example.com", 10L, 3L, 5, "Unauthorized"));
     }
 
     @Test
@@ -146,6 +193,8 @@ class RatingServiceTest {
         when(rideRepository.findById(10L)).thenReturn(Optional.of(ride));
         when(userRepository.findById(1L)).thenReturn(Optional.of(reviewer));
         when(userRepository.findById(2L)).thenReturn(Optional.of(reviewedUser));
+        when(bookingRepository.existsByRiderIdAndRideIdAndStatus(1L, 10L, BookingStatus.CONFIRMED))
+                .thenReturn(true);
         when(ratingRepository.existsByRideIdAndReviewerIdAndReviewedUserId(10L, 1L, 2L)).thenReturn(true);
 
         assertThrows(DuplicateRatingException.class, () ->
@@ -233,6 +282,7 @@ class RatingServiceTest {
         Ride ride = new Ride();
         ride.setId(id);
         ride.setStatus(RideStatus.COMPLETED);
+        ride.setDriver(user(2L, "driver@example.com"));
         return ride;
     }
 

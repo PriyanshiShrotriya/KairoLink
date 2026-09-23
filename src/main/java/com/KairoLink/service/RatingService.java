@@ -1,6 +1,7 @@
 package com.KairoLink.service;
 
 import com.KairoLink.entity.Rating;
+import com.KairoLink.entity.BookingStatus;
 import com.KairoLink.entity.Ride;
 import com.KairoLink.entity.RideStatus;
 import com.KairoLink.entity.User;
@@ -8,6 +9,7 @@ import com.KairoLink.exception.DuplicateRatingException;
 import com.KairoLink.exception.RideNotFoundException;
 import com.KairoLink.exception.UserNotFoundException;
 import com.KairoLink.repository.RatingRepository;
+import com.KairoLink.repository.BookingRepository;
 import com.KairoLink.repository.RideRepository;
 import com.KairoLink.repository.UserRepository;
 import jakarta.transaction.Transactional;
@@ -20,16 +22,19 @@ import java.util.Locale;
 public class RatingService {
 
     private final RatingRepository ratingRepository;
+    private final BookingRepository bookingRepository;
     private final RideRepository rideRepository;
     private final UserRepository userRepository;
 
     public RatingService(
             RatingRepository ratingRepository,
             RideRepository rideRepository,
-            UserRepository userRepository) {
+            UserRepository userRepository,
+            BookingRepository bookingRepository) {
         this.ratingRepository = ratingRepository;
         this.rideRepository = rideRepository;
         this.userRepository = userRepository;
+        this.bookingRepository = bookingRepository;
     }
 
     @Transactional
@@ -44,6 +49,7 @@ public class RatingService {
         User reviewedUser = userRepository.findById(reviewedUserId)
                 .orElseThrow(() -> new UserNotFoundException("Reviewed user was not found"));
 
+        validateParticipants(ride, reviewer, reviewedUser);
         return saveRating(ride, reviewer, reviewedUser, stars, comment);
     }
 
@@ -58,7 +64,27 @@ public class RatingService {
         User reviewedUser = userRepository.findById(reviewedUserId)
                 .orElseThrow(() -> new UserNotFoundException("Reviewed user was not found"));
 
+        validateParticipants(ride, reviewer, reviewedUser);
         return saveRating(ride, reviewer, reviewedUser, stars, comment);
+    }
+
+    @Transactional
+    public List<User> getEligibleReviewedUsers(String reviewerEmail, Long rideId) {
+        Ride ride = rideRepository.findById(rideId)
+                .orElseThrow(() -> new RideNotFoundException("Ride was not found"));
+        validateRideCompleted(ride);
+        User reviewer = findUserByEmail(reviewerEmail);
+
+        if (reviewer.getId().equals(ride.getDriver().getId())) {
+            return bookingRepository.findByRideIdAndStatus(rideId, BookingStatus.CONFIRMED).stream()
+                    .map(booking -> booking.getRider())
+                    .toList();
+        }
+        if (bookingRepository.existsByRiderIdAndRideIdAndStatus(
+                reviewer.getId(), rideId, BookingStatus.CONFIRMED)) {
+            return List.of(ride.getDriver());
+        }
+        throw new IllegalArgumentException("Reviewer did not participate in this ride");
     }
 
     public double getAverageRating(Long userId) {
@@ -109,6 +135,22 @@ public class RatingService {
     private void validateRideCompleted(Ride ride) {
         if (ride.getStatus() != RideStatus.COMPLETED) {
             throw new IllegalArgumentException("Ratings are only allowed after ride completion");
+        }
+    }
+
+    private void validateParticipants(Ride ride, User reviewer, User reviewedUser) {
+        if (reviewer.getId().equals(ride.getDriver().getId())) {
+            if (!bookingRepository.existsByRiderIdAndRideIdAndStatus(
+                    reviewedUser.getId(), ride.getId(), BookingStatus.CONFIRMED)) {
+                throw new IllegalArgumentException("Reviewed user did not participate in this ride");
+            }
+            return;
+        }
+        if (reviewer.getId().equals(reviewedUser.getId())
+                || !reviewedUser.getId().equals(ride.getDriver().getId())
+                || !bookingRepository.existsByRiderIdAndRideIdAndStatus(
+                        reviewer.getId(), ride.getId(), BookingStatus.CONFIRMED)) {
+            throw new IllegalArgumentException("Reviewer is not authorized to rate this participant");
         }
     }
 

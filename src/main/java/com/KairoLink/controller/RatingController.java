@@ -49,8 +49,8 @@ public class RatingController {
                 .orElseThrow(() -> new IllegalStateException("Authenticated user not found"));
 
         model.addAttribute("ride", ride);
-        model.addAttribute("driverId", ride.getDriver().getId());
-        model.addAttribute("riderId", reviewer.getId());
+        model.addAttribute("reviewedUsers",
+                ratingService.getEligibleReviewedUsers(authentication.getName(), id));
         return "rating/form";
     }
 

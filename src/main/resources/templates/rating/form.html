@@ -19,7 +19,14 @@
         </div>
 
         <form method="post" th:action="@{/rides/{id}/rate(id=${ride.id})}">
-            <input type="hidden" name="reviewedUserId" th:value="${ride.driver.id}">
+            <div class="form-group">
+                <label for="reviewedUserId">Rate:</label>
+                <select id="reviewedUserId" name="reviewedUserId" required>
+                    <option th:each="reviewedUser : ${reviewedUsers}"
+                            th:value="${reviewedUser.id}"
+                            th:text="${reviewedUser.name}"></option>
+                </select>
+            </div>
 
             <div class="form-group">
                 <label for="stars">Rating (1-5 stars):</label>

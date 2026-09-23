@@ -23,6 +23,7 @@ public class SecurityConfig {
                         .requestMatchers("/rider/**").hasRole("RIDER")
                         .requestMatchers("/driver/bookings/**").hasRole("DRIVER")
                         .requestMatchers("/vehicle/**").hasRole("DRIVER")
+                        .requestMatchers("/rides/*/rate").hasAnyRole("RIDER", "DRIVER")
                         .requestMatchers("/rides/**").hasRole("DRIVER")
                         .anyRequest().authenticated())
                 .userDetailsService(userDetailsService)
