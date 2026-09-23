@@ -26,6 +26,29 @@
                     <p class="ride-field-error" th:if="${#fields.hasErrors('routeDistinct')}" th:errors="*{routeDistinct}"></p>
                 </div>
             </div>
+            <div class="ride-route-fields">
+                <div class="ride-field">
+                    <label for="sourceLatitude">Starting point latitude</label>
+                    <input id="sourceLatitude" type="number" th:field="*{sourceLatitude}" min="-90" max="90" step="any">
+                    <p class="ride-field-error" th:if="${#fields.hasErrors('sourceLatitude')}" th:errors="*{sourceLatitude}"></p>
+                </div>
+                <div class="ride-field">
+                    <label for="sourceLongitude">Starting point longitude</label>
+                    <input id="sourceLongitude" type="number" th:field="*{sourceLongitude}" min="-180" max="180" step="any">
+                    <p class="ride-field-error" th:if="${#fields.hasErrors('sourceLongitude')}" th:errors="*{sourceLongitude}"></p>
+                </div>
+                <div class="ride-field">
+                    <label for="destinationLatitude">Destination latitude</label>
+                    <input id="destinationLatitude" type="number" th:field="*{destinationLatitude}" min="-90" max="90" step="any">
+                    <p class="ride-field-error" th:if="${#fields.hasErrors('destinationLatitude')}" th:errors="*{destinationLatitude}"></p>
+                </div>
+                <div class="ride-field">
+                    <label for="destinationLongitude">Destination longitude</label>
+                    <input id="destinationLongitude" type="number" th:field="*{destinationLongitude}" min="-180" max="180" step="any">
+                    <p class="ride-field-error" th:if="${#fields.hasErrors('destinationLongitude')}" th:errors="*{destinationLongitude}"></p>
+                </div>
+            </div>
+            <p class="ride-field-error" th:if="${#fields.hasErrors('coordinatePairComplete')}" th:errors="*{coordinatePairComplete}"></p>
         </section>
         <section class="ride-form-card">
             <h2>Schedule</h2>

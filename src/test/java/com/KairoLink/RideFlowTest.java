@@ -15,6 +15,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.math.BigDecimal;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -79,6 +80,55 @@ class RideFlowTest {
         mockMvc.perform(get("/rides").with(user(driver.getEmail()).roles("DRIVER")))
                 .andExpect(status().isOk())
                 .andExpect(view().name("driver/my-rides"));
+    }
+
+    @Test
+    @Transactional
+    void driverCanPublishRideWithCoordinates() throws Exception {
+        User driver = saveUser("coordinate-driver@example.com", Role.DRIVER);
+        String departure = LocalDateTime.now().plusDays(1).withSecond(0).withNano(0).toString();
+
+        mockMvc.perform(post("/rides")
+                        .with(user(driver.getEmail()).roles("DRIVER"))
+                        .with(csrf())
+                        .param("source", "Campus")
+                        .param("destination", "Office")
+                        .param("sourceLatitude", "28.613900")
+                        .param("sourceLongitude", "77.209000")
+                        .param("destinationLatitude", "28.535500")
+                        .param("destinationLongitude", "77.391000")
+                        .param("departureTime", departure)
+                        .param("seats", "3")
+                        .param("price", "25.00"))
+                .andExpect(status().is3xxRedirection());
+
+        Ride ride = rideRepository.findAll().stream().findFirst().orElseThrow();
+        assertEquals(new BigDecimal("28.613900"), ride.getSourceLatitude());
+        assertEquals(new BigDecimal("77.209000"), ride.getSourceLongitude());
+        assertEquals(new BigDecimal("28.535500"), ride.getDestinationLatitude());
+        assertEquals(new BigDecimal("77.391000"), ride.getDestinationLongitude());
+    }
+
+    @Test
+    @Transactional
+    void invalidCoordinateRangesAreRejectedWithoutPersistence() throws Exception {
+        User driver = saveUser("invalid-coordinate-driver@example.com", Role.DRIVER);
+        String departure = LocalDateTime.now().plusDays(1).withSecond(0).withNano(0).toString();
+
+        mockMvc.perform(post("/rides")
+                        .with(user(driver.getEmail()).roles("DRIVER"))
+                        .with(csrf())
+                        .param("source", "Campus")
+                        .param("destination", "Office")
+                        .param("sourceLatitude", "91")
+                        .param("destinationLongitude", "-181")
+                        .param("departureTime", departure)
+                        .param("seats", "3")
+                        .param("price", "25.00"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("driver/publish-ride"));
+
+        assertEquals(0, rideRepository.count());
     }
 
     @Test

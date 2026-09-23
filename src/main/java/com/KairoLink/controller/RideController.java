@@ -92,6 +92,10 @@ public class RideController {
         RideRequest request = new RideRequest();
         request.setSource(ride.getSource());
         request.setDestination(ride.getDestination());
+        request.setSourceLatitude(ride.getSourceLatitude());
+        request.setSourceLongitude(ride.getSourceLongitude());
+        request.setDestinationLatitude(ride.getDestinationLatitude());
+        request.setDestinationLongitude(ride.getDestinationLongitude());
         request.setDepartureTime(ride.getDepartureTime());
         request.setSeats(ride.getSeats());
         request.setPrice(ride.getPrice());
