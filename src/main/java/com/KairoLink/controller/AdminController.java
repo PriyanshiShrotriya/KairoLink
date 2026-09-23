@@ -1,10 +1,14 @@
 package com.KairoLink.controller;
 
 import com.KairoLink.entity.Booking;
+import com.KairoLink.entity.IssueReport;
+import com.KairoLink.entity.IssueStatus;
 import com.KairoLink.entity.Ride;
 import com.KairoLink.entity.User;
 import com.KairoLink.repository.BookingRepository;
+import com.KairoLink.repository.IssueReportRepository;
 import com.KairoLink.repository.RideRepository;
+import com.KairoLink.service.IssueReportService;
 import com.KairoLink.service.UserManagementService;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -13,6 +17,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
@@ -24,14 +29,20 @@ public class AdminController {
     private final UserManagementService userManagementService;
     private final RideRepository rideRepository;
     private final BookingRepository bookingRepository;
+    private final IssueReportService issueReportService;
+    private final IssueReportRepository issueReportRepository;
 
     public AdminController(
             UserManagementService userManagementService,
             RideRepository rideRepository,
-            BookingRepository bookingRepository) {
+            BookingRepository bookingRepository,
+            IssueReportService issueReportService,
+            IssueReportRepository issueReportRepository) {
         this.userManagementService = userManagementService;
         this.rideRepository = rideRepository;
         this.bookingRepository = bookingRepository;
+        this.issueReportService = issueReportService;
+        this.issueReportRepository = issueReportRepository;
     }
 
     @GetMapping("/users")
@@ -95,6 +106,27 @@ public class AdminController {
         List<Booking> bookings = bookingRepository.findAllBookingsWithDetails();
         model.addAttribute("bookings", bookings);
         return "admin/bookings";
+    }
+
+    @GetMapping("/issues")
+    public String listIssues(Model model) {
+        List<IssueReport> issues = issueReportService.getAllIssuesForAdmin();
+        model.addAttribute("issues", issues);
+        return "admin/issues";
+    }
+
+    @PostMapping("/issues/{issueId}/status")
+    public String updateIssueStatus(
+            @PathVariable Long issueId,
+            @RequestParam IssueStatus status,
+            RedirectAttributes redirectAttributes) {
+        try {
+            issueReportService.updateStatus(issueId, status);
+            redirectAttributes.addFlashAttribute("successMessage", "Issue status updated successfully");
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        }
+        return "redirect:/admin/issues";
     }
 }
 
