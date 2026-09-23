@@ -46,6 +46,18 @@ public class Ride {
     @Column(nullable = false, length = 150)
     private String destination;
 
+    @Column(name = "source_latitude", precision = 9, scale = 6)
+    private BigDecimal sourceLatitude;
+
+    @Column(name = "source_longitude", precision = 9, scale = 6)
+    private BigDecimal sourceLongitude;
+
+    @Column(name = "destination_latitude", precision = 9, scale = 6)
+    private BigDecimal destinationLatitude;
+
+    @Column(name = "destination_longitude", precision = 9, scale = 6)
+    private BigDecimal destinationLongitude;
+
     @Column(name = "departure_time", nullable = false)
     private LocalDateTime departureTime;
 

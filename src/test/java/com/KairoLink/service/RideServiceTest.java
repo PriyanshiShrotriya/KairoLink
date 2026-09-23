@@ -55,6 +55,49 @@ class RideServiceTest {
     }
 
     @Test
+    void publishesRideWithValidCoordinates() {
+        User driver = driver("driver@example.com");
+        when(userRepository.findByEmail(driver.getEmail())).thenReturn(Optional.of(driver));
+        when(rideRepository.save(any(Ride.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        RideRequest request = request("Campus", "Office");
+        request.setSourceLatitude(new BigDecimal("28.613900"));
+        request.setSourceLongitude(new BigDecimal("77.209000"));
+        request.setDestinationLatitude(new BigDecimal("28.535500"));
+        request.setDestinationLongitude(new BigDecimal("77.391000"));
+
+        Ride ride = rideService.publish(driver.getEmail(), request);
+
+        assertEquals(request.getSourceLatitude(), ride.getSourceLatitude());
+        assertEquals(request.getSourceLongitude(), ride.getSourceLongitude());
+        assertEquals(request.getDestinationLatitude(), ride.getDestinationLatitude());
+        assertEquals(request.getDestinationLongitude(), ride.getDestinationLongitude());
+    }
+
+    @Test
+    void rejectsCoordinatesOutsideLatitudeOrLongitudeRanges() {
+        User driver = driver("driver@example.com");
+        when(userRepository.findByEmail(driver.getEmail())).thenReturn(Optional.of(driver));
+        RideRequest request = request("Campus", "Office");
+        request.setSourceLatitude(new BigDecimal("91"));
+
+        assertThrows(IllegalArgumentException.class,
+                () -> rideService.publish(driver.getEmail(), request));
+        org.mockito.Mockito.verifyNoInteractions(rideRepository);
+    }
+
+    @Test
+    void rejectsLongitudeOutsideRange() {
+        User driver = driver("driver@example.com");
+        when(userRepository.findByEmail(driver.getEmail())).thenReturn(Optional.of(driver));
+        RideRequest request = request("Campus", "Office");
+        request.setDestinationLongitude(new BigDecimal("-181"));
+
+        assertThrows(IllegalArgumentException.class,
+                () -> rideService.publish(driver.getEmail(), request));
+        org.mockito.Mockito.verifyNoInteractions(rideRepository);
+    }
+
+    @Test
     void rejectsNonDriver() {
         User rider = new User();
         rider.setEmail("rider@example.com");
