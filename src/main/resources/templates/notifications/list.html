@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notifications</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <div th:replace="fragments/navbar :: navbar"></div>
+
+    <div class="container">
+        <h1>Notifications</h1>
+
+        <div th:if="${unreadCount > 0}" class="notification-actions">
+            <form method="post" th:action="@{/notifications/read-all}" style="display: inline;">
+                <button type="submit" class="btn btn-secondary">Mark all as read</button>
+            </form>
+        </div>
+
+        <div th:if="${notifications.isEmpty()}" class="empty-state">
+            <p>No notifications yet</p>
+        </div>
+
+        <div th:unless="${notifications.isEmpty()}" class="notification-list">
+            <div th:each="notification : ${notifications}" class="notification-item" th:classappend="${!notification.read} ? 'unread' : ''">
+                <div class="notification-header">
+                    <h3 th:text="${notification.title}"></h3>
+                    <small th:text="${#dates.format(notification.createdAt, 'MMM dd, yyyy HH:mm')}"></small>
+                </div>
+                <p th:text="${notification.message}"></p>
+                <div class="notification-type" th:text="${notification.type}"></div>
+
+                <th:block th:if="${notification.type.name() == 'BOOKING_REQUESTED' and notification.bookingId != null}">
+                    <a th:href="@{/driver/bookings(booking=${notification.bookingId})}" class="btn btn-sm btn-primary">View Request</a>
+                </th:block>
+
+                <th:block th:if="${!notification.read}">
+                    <form method="post" th:action="@{/notifications/{id}/read(id=${notification.id})}" style="display: inline;">
+                        <button type="submit" class="btn btn-sm btn-primary">Mark as read</button>
+                    </form>
+                </th:block>
+            </div>
+        </div>
+    </div>
+
+    <div th:replace="fragments/footer :: footer"></div>
+</body>
+</html>

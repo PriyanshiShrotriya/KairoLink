@@ -24,6 +24,10 @@
                         <span class="rider-input-marker" aria-hidden="true"></span>
                         <input id="source" name="source" type="text" placeholder="NIET, Knowledge Park II, Greater Noida" autocomplete="off">
                     </div>
+                    <button class="ride-button ride-button--secondary" type="button" data-use-current-location>
+                        Use my current location
+                    </button>
+                    <p class="ride-location-picker-status" data-current-location-status role="status" aria-live="polite"></p>
                 </div>
                 <div class="ride-field rider-route-field">
                     <label for="destination">To</label>
@@ -83,5 +87,6 @@
 </main>
 
 <div th:replace="~{fragments/footer :: footer}"></div>
+<script th:src="@{/js/rider-search-location.js}"></script>
 </body>
 </html>

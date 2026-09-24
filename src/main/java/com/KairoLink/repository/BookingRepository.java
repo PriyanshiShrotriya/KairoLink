@@ -15,26 +15,28 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     Optional<Booking> findById(Long id);
 
-        @Query("""
-            select booking from Booking booking
-            join fetch booking.ride ride
-            join fetch ride.driver
-            where booking.rider.id = :riderId
-            order by booking.createdAt desc
-            """)
-        List<Booking> findByRiderIdOrderByCreatedAtDesc(@Param("riderId") Long riderId);
+    @Query("""
+        select booking from Booking booking
+        join fetch booking.ride ride
+        join fetch ride.driver
+        where booking.rider.id = :riderId
+        order by booking.createdAt desc
+        """)
+    List<Booking> findByRiderIdOrderByCreatedAtDesc(@Param("riderId") Long riderId);
 
     List<Booking> findByRideId(Long rideId);
 
-        @Query("""
-            select booking from Booking booking
-            join fetch booking.ride ride
-            join fetch ride.driver
-            join fetch booking.rider
-            where ride.driver.id = :driverId
-            order by booking.createdAt desc
-            """)
-        List<Booking> findByRideDriverIdOrderByCreatedAtDesc(@Param("driverId") Long driverId);
+    List<Booking> findByRideIdAndStatus(Long rideId, BookingStatus status);
+
+    @Query("""
+        select booking from Booking booking
+        join fetch booking.ride ride
+        join fetch ride.driver
+        join fetch booking.rider
+        where ride.driver.id = :driverId
+        order by booking.createdAt desc
+        """)
+    List<Booking> findByRideDriverIdOrderByCreatedAtDesc(@Param("driverId") Long driverId);
 
     Optional<Booking> findByIdAndRideDriverId(Long id, Long driverId);
 
@@ -67,7 +69,9 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
         where booking.createdAt >= :from
           and booking.createdAt < :to
         """)
-    List<Instant> findCreatedAtInRange(@Param("from") Instant from, @Param("to") Instant to);
+    List<Instant> findCreatedAtInRange(
+            @Param("from") Instant from,
+            @Param("to") Instant to);
 
     /**
      * Returns [BookingStatus, count] pairs for the booking-status doughnut chart.
@@ -78,4 +82,9 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
         group by booking.status
         """)
     List<Object[]> countByStatus();
+
+    boolean existsByRiderIdAndRideIdAndStatus(
+            Long riderId,
+            Long rideId,
+            BookingStatus status);
 }

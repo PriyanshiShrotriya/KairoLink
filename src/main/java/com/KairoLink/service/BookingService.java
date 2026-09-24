@@ -3,6 +3,7 @@ package com.KairoLink.service;
 import com.KairoLink.dto.BookingRequest;
 import com.KairoLink.entity.Booking;
 import com.KairoLink.entity.BookingStatus;
+import com.KairoLink.entity.NotificationType;
 import com.KairoLink.entity.Ride;
 import com.KairoLink.entity.RideStatus;
 import com.KairoLink.entity.Role;
@@ -28,14 +29,17 @@ public class BookingService {
     private final UserRepository userRepository;
     private final RideRepository rideRepository;
     private final BookingRepository bookingRepository;
+    private final NotificationService notificationService;
 
     public BookingService(
             UserRepository userRepository,
             RideRepository rideRepository,
-            BookingRepository bookingRepository) {
+            BookingRepository bookingRepository,
+            NotificationService notificationService) {
         this.userRepository = userRepository;
         this.rideRepository = rideRepository;
         this.bookingRepository = bookingRepository;
+        this.notificationService = notificationService;
     }
 
     @Transactional
@@ -57,7 +61,17 @@ public class BookingService {
         booking.setStatus(BookingStatus.PENDING);
         booking.setSeatsRequested(request.getSeatsRequested());
         booking.setTotalPrice(ride.getPrice().multiply(BigDecimal.valueOf(request.getSeatsRequested())));
-        return bookingRepository.save(booking);
+        Booking saved = bookingRepository.save(booking);
+
+        // Notify driver of booking request
+        notificationService.createNotification(
+                ride.getDriver().getEmail(),
+                NotificationType.BOOKING_REQUESTED,
+                "New booking request",
+                rider.getName() + " requested " + request.getSeatsRequested() + " seat(s) on your ride",
+                saved.getId());
+
+        return saved;
     }
 
     public List<Booking> findDriverBookings(String email) {
@@ -84,7 +98,19 @@ public class BookingService {
         }
 
         booking.setStatus(BookingStatus.CONFIRMED);
-        return bookingRepository.save(booking);
+        Booking saved = bookingRepository.save(booking);
+
+        // Force load rider association before session closes
+        saved.getRider().getEmail();
+
+        // Notify rider of booking acceptance
+        notificationService.createNotification(
+                saved.getRider().getEmail(),
+                NotificationType.BOOKING_ACCEPTED,
+                "Booking confirmed",
+                "Your booking for " + booking.getSeatsRequested() + " seat(s) has been accepted");
+
+        return saved;
     }
 
     @Transactional
@@ -94,7 +120,19 @@ public class BookingService {
                 .orElseThrow(() -> new BookingNotFoundException("Booking was not found"));
         ensurePending(booking);
         booking.setStatus(BookingStatus.REJECTED);
-        return bookingRepository.save(booking);
+        Booking saved = bookingRepository.save(booking);
+
+        // Force load rider association before session closes
+        saved.getRider().getEmail();
+
+        // Notify rider of booking rejection
+        notificationService.createNotification(
+                saved.getRider().getEmail(),
+                NotificationType.BOOKING_REJECTED,
+                "Booking rejected",
+                "Your booking for " + booking.getSeatsRequested() + " seat(s) was rejected");
+
+        return saved;
     }
 
     private void validateRideForBooking(Ride ride, User rider, int seatsRequested) {

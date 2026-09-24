@@ -1,159 +1,239 @@
-# KairoLink — Development Phases
+# KairoLink – Development Phases
 
-A phased build plan, sequenced so each phase produces a working, testable slice of the app rather than isolated pieces. Follows the architecture and requirements already defined.
-
----
-
-## Phase 0: Project Setup & Foundation
-
-**Goal:** Get a running skeleton before writing any real feature.
-
-- Initialize Maven project (Spring Boot, JAR packaging, `spring-boot-starter-thymeleaf` + `spring-boot-starter-web` + DevTools)
-- Set up folder structure (`controller`, `service`, `repository`, `model`, `dto`, etc.)
-- Configure `application.properties` (DB connection, server port — Thymeleaf's view resolver is auto-configured, no manual setup needed)
-- Set up PostgreSQL database + create schema
-- Confirm a basic "Hello KairoLink" Thymeleaf page renders at `src/main/resources/templates/`, with DevTools hot-reload working
-- Set up Git repo, `.gitignore`, README
-- Set up base layout fragments (`fragments/header.html`, `fragments/footer.html`, `fragments/navbar.html`) and global CSS/JS structure under `static/`
-
-**Output:** App boots, DB connects, one static Thymeleaf page renders end-to-end.
+## Phase 0 – Project Setup & Foundation
+- [x] Initialize Spring Boot MVC project
+- [x] Configure Maven
+- [x] Configure PostgreSQL / Supabase
+- [x] Configure Thymeleaf
+- [x] Configure Flyway database migrations
+- [x] Establish project package structure
+- [x] Establish shared CSS / JavaScript structure
+- [x] Configure Git and GitHub workflow
+- [x] Create base application architecture
 
 ---
 
-## Phase 1: User Authentication & Profile
-
-**Goal:** Users can register, log in, and manage their profile — the foundation every other feature depends on.
-
-- `User` entity (with role: RIDER/DRIVER/ADMIN, or toggleable role flags)
-- Registration flow (form → validation → hashed password → save)
-- Login/logout via Spring Security (session-based)
-- Role-based access control (secure routes by role)
-- Profile view/edit page (name, phone, photo)
-- Driver-specific: `Vehicle` entity + form to add vehicle details
-- Password reset flow (optional in this phase, can defer)
-
-**Output:** A user can sign up as Rider or Driver, log in, and see a role-appropriate dashboard shell.
-
----
-
-## Phase 2: Ride Management (Driver Side)
-
-**Goal:** Drivers can publish and manage rides.
-
-- `Ride` entity (source, destination, date/time, seats, price, status)
-- "Publish a Ride" form + controller + service + repository
-- "My Rides" page (list upcoming/ongoing/completed/cancelled)
-- Edit/cancel a ride (before it starts)
-- Ride status transitions (CREATED → ACTIVE → ONGOING → COMPLETED/CANCELLED)
-
-**Output:** A logged-in Driver can create a ride and see it listed on their dashboard.
+## Phase 1 – User Authentication & Profile
+- [x] User registration
+- [x] User login/logout
+- [x] Password hashing
+- [x] Role-based access control
+  - RIDER
+  - DRIVER
+  - ADMIN
+- [x] User principal / authentication integration
+- [x] User profile
+- [x] Driver profile support
+- [x] Authentication and authorization tests
 
 ---
 
-## Phase 3: Ride Search & Booking (Rider Side)
-
-**Goal:** Riders can find and book rides — this is the core transaction of the platform.
-
-- Search form (source, destination, date) + results page
-- Matching/filter logic in `RideService` (route match, date, seats > 0, not expired)
-- Ride details page (driver info, vehicle, price, rating placeholder)
-- Booking request flow (`Booking` entity: status PENDING/CONFIRMED/REJECTED/CANCELLED)
-- Driver accepts/rejects booking → seat count updates transactionally
-- Prevent overbooking (transactional seat-decrement check)
-- Rider's "My Bookings" page
-
-**Output:** A Rider can search, request a seat, and see booking status update once the Driver responds.
-
----
-
-## Phase 4: Ratings, Notifications & Ride Lifecycle Completion
-
-**Goal:** Close the loop on a ride and start building trust signals.
-
-- Mark ride as started/completed (Driver action)
-- Post-ride rating flow (`Rating` entity, 1–5 stars + comment, both directions)
-- Average rating calculation shown on user profile
-- In-app notifications (booking requested/accepted/rejected, ride reminder, cancellation)
-- Email notifications for key events (JavaMail integration)
-
-**Output:** Full ride lifecycle works start to finish, with ratings and notifications wired in.
+## Phase 2 – Ride Management
+- [x] Driver create ride
+- [x] View driver's rides
+- [x] Edit ride
+- [x] Cancel ride
+- [x] Ride status management
+  - CREATED
+  - ACTIVE
+  - ONGOING
+  - COMPLETED
+  - CANCELLED
+- [x] Future-ride validation
+- [x] Driver ownership validation
+- [x] Ride management UI
+- [x] Driver dashboard integration
+- [x] Ride management tests
 
 ---
 
-## Phase 5: Admin Panel
-
-**Goal:** Give the platform operator visibility and control.
-
-- Admin dashboard (basic stats: total users, active rides, bookings this week)
-- User management (view, suspend, ban)
-- Ride/booking monitoring view
-- Handle reported issues (basic flagging + resolution status)
-
-**Output:** Admin can log in, see platform activity, and take moderation actions.
-
----
-
-## Phase 6: UI Polish & Responsiveness
-
-**Goal:** Make it look and feel like a real product, not a prototype.
-
-- Apply consistent theme (per `design.md`) across all Thymeleaf templates
-- Responsive layout pass (Bootstrap grid, mobile breakpoints)
-- Form validation feedback (client-side JS + server-side error display)
-- Loading states, empty states (e.g. "no rides found"), error pages (404/500)
-- Dashboard UX cleanup (Rider/Driver/Admin views)
-
-**Output:** App is visually consistent and usable across screen sizes.
+## Phase 3 – Ride Search & Booking
+- [x] Rider ride search
+- [x] Search/filter available rides
+- [x] Ride details
+- [x] Rider booking request
+- [x] Driver view booking requests
+- [x] Driver accept booking
+- [x] Driver reject booking
+- [x] Booking status management
+  - PENDING
+  - CONFIRMED
+  - REJECTED
+  - CANCELLED
+- [x] Duplicate active-booking prevention
+- [x] Rider booking flow
+- [x] Driver booking management UI
+- [x] Booking authorization and ownership validation
+- [x] Booking tests
+- [x] H2/PostgreSQL migration compatibility
 
 ---
 
-## Phase 7: Testing & Hardening
+## Phase 4 – Ratings, Notifications & Ride Lifecycle
 
-**Goal:** Catch issues before real users do.
+### Ride Lifecycle
+- [x] Driver can start an active ride
+- [x] ACTIVE → ONGOING transition
+- [x] Driver can complete an ongoing ride
+- [x] ONGOING → COMPLETED transition
+- [x] Driver-only lifecycle authorization
+- [x] Ride lifecycle validation
+- [x] Ride lifecycle tests
 
-- Unit tests for service layer (`RideServiceTest`, `BookingServiceTest`, etc.)
-- Controller-level tests for key flows
-- Manual QA pass on all user stories from `requirements.md`
-- Edge case testing: double booking, expired rides, cancelled ride with active bookings, invalid inputs
-- Security review (role access checks, password handling, session fixation)
+### Ratings
+- [x] Create rating domain
+- [x] Rider can rate the driver after ride completion
+- [x] Driver can rate a confirmed rider after ride completion
+- [x] Prevent unauthorized users from rating
+- [x] Validate rating participants against the ride
+- [x] Prevent duplicate ratings
+- [x] Require completed ride before rating
+- [x] Rating form and UI
+- [x] Rating service tests
+- [x] Rating authorization tests
 
-**Output:** Core flows are test-covered and edge cases handled gracefully.
+### In-App Notifications
+- [x] Create notification domain
+- [x] Store notifications in database
+- [x] Booking-request notification to driver
+- [x] Booking-accepted notification to rider
+- [x] Booking-rejected notification to rider
+- [x] Unread notification count
+- [x] Notification navbar integration
+- [x] Notifications page
+- [x] Link booking-request notifications to the relevant booking
+- [x] Highlight relevant booking request from notification
+- [x] Notification service tests
+- [x] Booking notification integration tests
+
+### Phase 4 Testing & Stability
+- [x] Integrate Phase 3 booking functionality with Phase 4 notifications
+- [x] Preserve Phase 3 booking behavior during Phase 4 integration
+- [x] Resolve H2/PostgreSQL Flyway compatibility issues
+- [x] Verify authorization across ride lifecycle, booking, rating, and notifications
+- [x] Run focused Phase 4 tests
+- [x] Run full Maven test suite
+- [x] Verify Flyway migrations V1–V7
+- [x] Review implementation for unintended changes
 
 ---
 
-## Phase 8: Deployment
+## Phase 5 – Maps, Routes & Live Location
 
-**Goal:** Get KairoLink live.
+### Map Integration
+- [ ] Integrate MapLibre GL JS
+- [ ] Integrate OpenStreetMap map data/provider
+- [ ] Display interactive maps
+- [ ] Select pickup and destination locations
+- [ ] Store latitude/longitude coordinates
 
-- Package as a self-contained JAR (`mvn clean package`), containerize with the project `Dockerfile`
-- Set up production database (separate from dev — managed PostgreSQL on the chosen host, e.g. Render/Railway/Neon/Supabase)
-- Environment-specific configs (`application-prod.properties` or environment variables — never commit prod DB credentials)
-- Set up basic monitoring/logging for production
-- Deploy to chosen host (Render / Railway / Fly.io — all support "deploy from Dockerfile" or "deploy a Spring Boot JAR" with minimal config)
+### Route Calculation
+- [ ] Integrate OSRM
+- [ ] Calculate route between pickup and destination
+- [ ] Display route on map
+- [ ] Calculate/display estimated distance
+- [ ] Calculate/display estimated travel time
 
-**Output:** KairoLink is live and accessible via a public URL.
+### Driver Location
+- [ ] Add browser Geolocation API support
+- [ ] Request location permission
+- [ ] Store driver's current latitude/longitude
+- [ ] Update driver location
+- [ ] Validate location updates
+- [ ] Add location authorization/security rules
+
+### Rider Live Tracking
+- [ ] Display driver's current location
+- [ ] Show driver location during an active ride
+- [ ] Connect ride lifecycle with live tracking
+- [ ] Implement initial polling-based location updates
+- [ ] Evaluate WebSocket/SSE for future real-time updates
+
+### Phase 5 Testing
+- [ ] Test map rendering
+- [ ] Test coordinate storage
+- [ ] Test route calculation
+- [ ] Test location authorization
+- [ ] Test driver location updates
+- [ ] Test rider live tracking
+- [ ] Test lifecycle/location integration
 
 ---
 
-## Phase 9 (Post-MVP): Enhancements
-
-**Goal:** Iterate based on real usage.
-
-- In-app chat between Driver & Rider
-- Google Maps integration for route visualization & better matching
-- In-app payments/wallet
-- Recurring rides (auto-publish daily commute)
-- Live location sharing during active ride
-- Caching (Redis) for frequent searches
-
-**Output:** Platform evolves beyond MVP based on user feedback and adoption.
+## Phase 6 – Admin Panel
+- [ ] Admin dashboard
+- [ ] User management
+- [ ] Driver management
+- [ ] Ride management
+- [ ] Booking management
+- [ ] Rating moderation
+- [ ] Notification management
+- [ ] Basic system statistics
+- [ ] Admin authorization/security
+- [ ] Admin tests
 
 ---
 
-## Suggested Sequencing Notes
+## Phase 7 – UI Polish & Responsiveness
+- [ ] Complete responsive design
+- [ ] Improve mobile layout
+- [ ] Improve desktop layout
+- [ ] Consistent typography
+- [ ] Consistent spacing
+- [ ] Loading states
+- [ ] Empty states
+- [ ] Error states
+- [ ] Form validation feedback
+- [ ] Accessibility improvements
+- [ ] Finalize visual consistency across dashboards
+- [ ] Cross-browser UI testing
 
-- **Phases 0–3 are the critical path** — nothing else matters until publish → search → book works end-to-end.
-- **Phase 4 (ratings/notifications)** can partially overlap with Phase 3 once `Booking` entity exists.
-- **Phase 5 (Admin)** can be built in parallel by a second contributor, since it depends only on Phase 1 (User) and Phase 2/3 (Ride/Booking) entities existing.
-- **Phase 6 (UI polish)** is easiest done incrementally per-phase rather than saved entirely for the end — but a dedicated pass here is still worth it before launch.
-- **Phase 7 (Testing)** should ideally start as early as Phase 2, not be bolted on at the end.
+---
+
+## Phase 8 – Testing & Hardening
+- [ ] Expand unit test coverage
+- [ ] Expand integration test coverage
+- [ ] Controller tests
+- [ ] Service tests
+- [ ] Repository tests
+- [ ] Security/authorization testing
+- [ ] Database migration testing
+- [ ] Edge-case testing
+- [ ] Error-handling review
+- [ ] Input validation review
+- [ ] Performance review
+- [ ] Security review
+- [ ] Full regression testing
+
+---
+
+## Phase 9 – Deployment
+- [ ] Prepare production configuration
+- [ ] Configure production database
+- [ ] Configure environment variables/secrets
+- [ ] Configure production logging
+- [ ] Build production JAR
+- [ ] Deploy backend
+- [ ] Deploy frontend/UI
+- [ ] Configure domain
+- [ ] Configure HTTPS
+- [ ] Verify production database migrations
+- [ ] Production smoke testing
+- [ ] Deployment documentation
+
+---
+
+## Phase 10 – Post-MVP Enhancements
+- [ ] Email notifications
+- [ ] Ride reminder notifications
+- [ ] Ride cancellation notifications
+- [ ] Average rating displayed on user profile
+- [ ] Advanced ride search/filtering
+- [ ] Improved live location with WebSockets/SSE
+- [ ] Ride history improvements
+- [ ] User reporting/complaint system
+- [ ] Advanced admin analytics
+- [ ] Additional UI/UX improvements
+- [ ] Performance optimizations
+- [ ] Additional security hardening
+- [ ] Other post-MVP features based on user feedback

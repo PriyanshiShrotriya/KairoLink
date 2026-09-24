@@ -26,6 +26,33 @@
                     <p class="ride-field-error" th:if="${#fields.hasErrors('routeDistinct')}" th:errors="*{routeDistinct}"></p>
                 </div>
             </div>
+            <input id="sourceLatitude" type="hidden" th:field="*{sourceLatitude}">
+            <input id="sourceLongitude" type="hidden" th:field="*{sourceLongitude}">
+            <input id="destinationLatitude" type="hidden" th:field="*{destinationLatitude}">
+            <input id="destinationLongitude" type="hidden" th:field="*{destinationLongitude}">
+            <p class="ride-field-error" th:if="${#fields.hasErrors('coordinatePairComplete')}" th:errors="*{coordinatePairComplete}"></p>
+            <div class="ride-location-picker"
+                 data-ride-location-picker
+                 data-use-current-location="true"
+                 data-source-latitude=""
+                 data-source-longitude=""
+                 data-destination-latitude=""
+                 data-destination-longitude="">
+                <div class="ride-location-picker-header">
+                    <div>
+                        <h3>Choose locations on the map</h3>
+                        <p>Select a point, then click the map to set it.</p>
+                    </div>
+                    <div class="ride-location-picker-actions" role="group" aria-label="Map location selection">
+                        <button type="button" class="ride-button ride-button--secondary" data-location-target="source">Set starting point</button>
+                        <button type="button" class="ride-button ride-button--secondary" data-location-target="destination">Set destination</button>
+                    </div>
+                </div>
+                <p class="ride-location-picker-status" data-location-status aria-live="polite">Select a location to begin.</p>
+                <p class="ride-location-picker-route" data-location-route aria-live="polite"></p>
+                <div class="ride-location-map" data-location-map aria-label="Map for selecting ride locations"></div>
+                <p>Map data © OpenStreetMap contributors.</p>
+            </div>
         </section>
         <section class="ride-form-card">
             <h2>Schedule</h2>
@@ -59,5 +86,7 @@
     </form>
 </main>
 <div th:replace="~{fragments/footer :: footer}"></div>
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<script th:src="@{/js/ride-location-picker.js}"></script>
 </body>
 </html>

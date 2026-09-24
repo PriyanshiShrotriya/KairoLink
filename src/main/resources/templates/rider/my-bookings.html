@@ -46,6 +46,24 @@
                 <span class="rider-booking-message" th:if="${booking.status != null and booking.status.name() == 'CANCELLED'}">Booking cancelled</span>
                 <a class="ride-button ride-button--secondary" th:href="@{/rider/ride/{id}(id=${booking.ride.id})}">View Ride</a>
             </div>
+            <div class="rider-live-location-session"
+                 data-rider-live-location-session
+                 th:if="${booking.status != null and booking.status.name() == 'CONFIRMED'
+                         and booking.ride.status != null and booking.ride.status.name() == 'ONGOING'
+                         and booking.ride.sourceLatitude != null and booking.ride.sourceLongitude != null
+                         and booking.ride.destinationLatitude != null and booking.ride.destinationLongitude != null}"
+                 th:attr="data-ride-id=${booking.ride.id},
+                          data-source-latitude=${booking.ride.sourceLatitude},
+                          data-source-longitude=${booking.ride.sourceLongitude},
+                          data-destination-latitude=${booking.ride.destinationLatitude},
+                          data-destination-longitude=${booking.ride.destinationLongitude}">
+                <div class="driver-location-map"
+                     data-rider-location-map
+                     aria-label="Live driver location map"></div>
+                <p class="driver-location-status"
+                   data-rider-location-status
+                   role="status">Loading route and driver location...</p>
+            </div>
         </article>
     </section>
 
@@ -72,5 +90,7 @@
 </main>
 
 <div th:replace="~{fragments/footer :: footer}"></div>
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<script th:src="@{/js/rider-live-location.js}"></script>
 </body>
 </html>

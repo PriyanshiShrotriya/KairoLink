@@ -3,6 +3,7 @@ package com.KairoLink.service;
 import com.KairoLink.dto.BookingRequest;
 import com.KairoLink.entity.Booking;
 import com.KairoLink.entity.BookingStatus;
+import com.KairoLink.entity.NotificationType;
 import com.KairoLink.entity.Ride;
 import com.KairoLink.entity.RideStatus;
 import com.KairoLink.entity.Role;
@@ -31,6 +32,7 @@ class BookingServiceTest {
     private UserRepository userRepository;
     private RideRepository rideRepository;
     private BookingRepository bookingRepository;
+    private NotificationService notificationService;
     private BookingService bookingService;
 
     @BeforeEach
@@ -38,24 +40,36 @@ class BookingServiceTest {
         userRepository = mock(UserRepository.class);
         rideRepository = mock(RideRepository.class);
         bookingRepository = mock(BookingRepository.class);
-        bookingService = new BookingService(userRepository, rideRepository, bookingRepository);
+        notificationService = mock(NotificationService.class);
+        bookingService = new BookingService(userRepository, rideRepository, bookingRepository, notificationService);
     }
 
     @Test
     void createsPendingBookingWithoutChangingRideSeats() {
         User rider = user(1L, "rider@example.com", Role.RIDER);
+        rider.setName("Rider");
         Ride ride = ride(2L, 3);
         BookingRequest request = request(2);
         when(userRepository.findByEmail("rider@example.com")).thenReturn(Optional.of(rider));
         when(rideRepository.findById(7L)).thenReturn(Optional.of(ride));
         when(bookingRepository.existsByRiderIdAndRideIdAndStatusIn(any(), any(), any())).thenReturn(false);
-        when(bookingRepository.save(any(Booking.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(bookingRepository.save(any(Booking.class))).thenAnswer(invocation -> {
+            Booking saved = invocation.getArgument(0);
+            saved.setId(11L);
+            return saved;
+        });
 
         Booking booking = bookingService.request(" RIDER@EXAMPLE.COM ", 7L, request);
 
         assertEquals(BookingStatus.PENDING, booking.getStatus());
         assertEquals(new BigDecimal("50.00"), booking.getTotalPrice());
         assertEquals(3, ride.getSeats());
+        verify(notificationService).createNotification(
+                "driver@example.com",
+                NotificationType.BOOKING_REQUESTED,
+                "New booking request",
+                "Rider requested 2 seat(s) on your ride",
+                11L);
     }
 
     @Test

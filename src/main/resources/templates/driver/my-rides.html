@@ -15,6 +15,8 @@
         <p th:if="${param.created}">Your ride was published successfully.</p>
         <p th:if="${param.updated}">Your ride was updated successfully.</p>
         <p th:if="${param.cancelled}">Your ride was cancelled.</p>
+        <p th:if="${param.started}">Your ride has started.</p>
+        <p th:if="${param.completed}">Your ride was completed.</p>
     </div>
 
     <nav class="ride-status-tabs" aria-label="Ride status summary">
@@ -63,16 +65,60 @@
             </div>
 
             <div class="ride-card-actions"
-                 th:if="${ride.status.name() == 'ACTIVE' and ride.departureTime.isAfter(T(java.time.LocalDateTime).now())}">
-                <a class="ride-button ride-button--secondary" th:href="@{/rides/{id}/edit(id=${ride.id})}">Edit Ride</a>
-                <form th:action="@{/rides/{id}/cancel(id=${ride.id})}" method="post">
+                 th:if="${ride.status.name() == 'ACTIVE'}">
+                <form th:action="@{/rides/{id}/start(id=${ride.id})}" method="post">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                    <button class="ride-button ride-button--primary" type="submit">Start Ride</button>
+                </form>
+                <a class="ride-button ride-button--secondary"
+                   th:if="${ride.departureTime.isAfter(T(java.time.LocalDateTime).now())}"
+                   th:href="@{/rides/{id}/edit(id=${ride.id})}">Edit Ride</a>
+                <form th:if="${ride.departureTime.isAfter(T(java.time.LocalDateTime).now())}"
+                      th:action="@{/rides/{id}/cancel(id=${ride.id})}" method="post">
                     <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
                     <button class="ride-button ride-button--danger" type="submit">Cancel Ride</button>
+                </form>
+            </div>
+
+            <div class="ride-card-actions"
+                 th:if="${ride.status.name() == 'ONGOING'}">
+                <div class="driver-location-session"
+                     data-driver-location-session
+                     th:attr="data-ride-id=${ride.id},
+                              data-source-latitude=${ride.sourceLatitude},
+                              data-source-longitude=${ride.sourceLongitude},
+                              data-destination-latitude=${ride.destinationLatitude},
+                              data-destination-longitude=${ride.destinationLongitude}">
+                    <input type="hidden"
+                           data-location-csrf
+                           th:name="${_csrf.parameterName}"
+                           th:value="${_csrf.token}">
+                    <div class="driver-location-map"
+                         data-driver-location-map
+                         aria-label="Current driver location map"></div>
+                    <p class="driver-location-status"
+                       data-driver-location-status
+                       role="status">Location sharing is off.</p>
+                    <div class="driver-location-actions">
+                        <button class="ride-button ride-button--secondary"
+                                type="button"
+                                data-location-start>Start location sharing</button>
+                        <button class="ride-button ride-button--secondary"
+                                type="button"
+                                data-location-stop
+                                hidden>Stop sharing</button>
+                    </div>
+                </div>
+                <form th:action="@{/rides/{id}/complete(id=${ride.id})}" method="post">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                    <button class="ride-button ride-button--primary" type="submit">Complete Ride</button>
                 </form>
             </div>
         </article>
     </section>
 </main>
 <div th:replace="~{fragments/footer :: footer}"></div>
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<script th:src="@{/js/driver-live-location.js}"></script>
 </body>
 </html>

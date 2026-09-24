@@ -76,10 +76,26 @@ public class RideController {
         return "redirect:/rides?cancelled";
     }
 
+    @PostMapping("/rides/{id}/start")
+    public String start(Authentication authentication, @PathVariable Long id) {
+        rideService.start(authentication.getName(), id);
+        return "redirect:/rides?started";
+    }
+
+    @PostMapping("/rides/{id}/complete")
+    public String complete(Authentication authentication, @PathVariable Long id) {
+        rideService.complete(authentication.getName(), id);
+        return "redirect:/rides?completed";
+    }
+
     private RideRequest toRequest(com.KairoLink.entity.Ride ride) {
         RideRequest request = new RideRequest();
         request.setSource(ride.getSource());
         request.setDestination(ride.getDestination());
+        request.setSourceLatitude(ride.getSourceLatitude());
+        request.setSourceLongitude(ride.getSourceLongitude());
+        request.setDestinationLatitude(ride.getDestinationLatitude());
+        request.setDestinationLongitude(ride.getDestinationLongitude());
         request.setDepartureTime(ride.getDepartureTime());
         request.setSeats(ride.getSeats());
         request.setPrice(ride.getPrice());

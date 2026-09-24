@@ -55,6 +55,49 @@ class RideServiceTest {
     }
 
     @Test
+    void publishesRideWithValidCoordinates() {
+        User driver = driver("driver@example.com");
+        when(userRepository.findByEmail(driver.getEmail())).thenReturn(Optional.of(driver));
+        when(rideRepository.save(any(Ride.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        RideRequest request = request("Campus", "Office");
+        request.setSourceLatitude(new BigDecimal("28.613900"));
+        request.setSourceLongitude(new BigDecimal("77.209000"));
+        request.setDestinationLatitude(new BigDecimal("28.535500"));
+        request.setDestinationLongitude(new BigDecimal("77.391000"));
+
+        Ride ride = rideService.publish(driver.getEmail(), request);
+
+        assertEquals(request.getSourceLatitude(), ride.getSourceLatitude());
+        assertEquals(request.getSourceLongitude(), ride.getSourceLongitude());
+        assertEquals(request.getDestinationLatitude(), ride.getDestinationLatitude());
+        assertEquals(request.getDestinationLongitude(), ride.getDestinationLongitude());
+    }
+
+    @Test
+    void rejectsCoordinatesOutsideLatitudeOrLongitudeRanges() {
+        User driver = driver("driver@example.com");
+        when(userRepository.findByEmail(driver.getEmail())).thenReturn(Optional.of(driver));
+        RideRequest request = request("Campus", "Office");
+        request.setSourceLatitude(new BigDecimal("91"));
+
+        assertThrows(IllegalArgumentException.class,
+                () -> rideService.publish(driver.getEmail(), request));
+        org.mockito.Mockito.verifyNoInteractions(rideRepository);
+    }
+
+    @Test
+    void rejectsLongitudeOutsideRange() {
+        User driver = driver("driver@example.com");
+        when(userRepository.findByEmail(driver.getEmail())).thenReturn(Optional.of(driver));
+        RideRequest request = request("Campus", "Office");
+        request.setDestinationLongitude(new BigDecimal("-181"));
+
+        assertThrows(IllegalArgumentException.class,
+                () -> rideService.publish(driver.getEmail(), request));
+        org.mockito.Mockito.verifyNoInteractions(rideRepository);
+    }
+
+    @Test
     void rejectsNonDriver() {
         User rider = new User();
         rider.setEmail("rider@example.com");
@@ -98,6 +141,59 @@ class RideServiceTest {
 
         assertEquals(RideStatus.CANCELLED, ride.getStatus());
         verify(rideRepository).save(ride);
+    }
+
+    @Test
+    void startChangesStatusToOngoing() {
+        User driver = driver("driver@example.com");
+        Ride ride = ride(driver, LocalDateTime.now().plusHours(1));
+        when(userRepository.findByEmail(driver.getEmail())).thenReturn(Optional.of(driver));
+        when(rideRepository.findByIdAndDriverId(1L, driver.getId())).thenReturn(Optional.of(ride));
+        when(rideRepository.save(ride)).thenReturn(ride);
+
+        rideService.start(driver.getEmail(), 1L);
+
+        assertEquals(RideStatus.ONGOING, ride.getStatus());
+        verify(rideRepository).save(ride);
+    }
+
+    @Test
+    void startRejectsNonActiveRide() {
+        User driver = driver("driver@example.com");
+        Ride ride = ride(driver, LocalDateTime.now().plusHours(1));
+        ride.setStatus(RideStatus.CANCELLED);
+        when(userRepository.findByEmail(driver.getEmail())).thenReturn(Optional.of(driver));
+        when(rideRepository.findByIdAndDriverId(1L, driver.getId())).thenReturn(Optional.of(ride));
+
+        assertThrows(RideNotFoundException.class,
+                () -> rideService.start(driver.getEmail(), 1L));
+    }
+
+    @Test
+    void completeChangesStatusToCompleted() {
+        User driver = driver("driver@example.com");
+        Ride ride = ride(driver, LocalDateTime.now().plusHours(1));
+        ride.setStatus(RideStatus.ONGOING);
+        when(userRepository.findByEmail(driver.getEmail())).thenReturn(Optional.of(driver));
+        when(rideRepository.findByIdAndDriverId(1L, driver.getId())).thenReturn(Optional.of(ride));
+        when(rideRepository.save(ride)).thenReturn(ride);
+
+        rideService.complete(driver.getEmail(), 1L);
+
+        assertEquals(RideStatus.COMPLETED, ride.getStatus());
+        verify(rideRepository).save(ride);
+    }
+
+    @Test
+    void completeRejectsNonOngoingRide() {
+        User driver = driver("driver@example.com");
+        Ride ride = ride(driver, LocalDateTime.now().plusHours(1));
+        ride.setStatus(RideStatus.ACTIVE);
+        when(userRepository.findByEmail(driver.getEmail())).thenReturn(Optional.of(driver));
+        when(rideRepository.findByIdAndDriverId(1L, driver.getId())).thenReturn(Optional.of(ride));
+
+        assertThrows(RideNotFoundException.class,
+                () -> rideService.complete(driver.getEmail(), 1L));
     }
 
     @Test

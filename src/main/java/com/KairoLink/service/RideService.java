@@ -89,6 +89,26 @@ public class RideService {
         return rideRepository.save(ride);
     }
 
+    @Transactional
+    public Ride start(String email, Long rideId) {
+        Ride ride = getMyRide(email, rideId);
+        if (ride.getStatus() != RideStatus.ACTIVE) {
+            throw new RideNotFoundException("Ride cannot be started");
+        }
+        ride.setStatus(RideStatus.ONGOING);
+        return rideRepository.save(ride);
+    }
+
+    @Transactional
+    public Ride complete(String email, Long rideId) {
+        Ride ride = getMyRide(email, rideId);
+        if (ride.getStatus() != RideStatus.ONGOING) {
+            throw new RideNotFoundException("Ride cannot be completed");
+        }
+        ride.setStatus(RideStatus.COMPLETED);
+        return rideRepository.save(ride);
+    }
+
     private Ride getEditableRide(String email, Long rideId) {
         Ride ride = getMyRide(email, rideId);
         if (ride.getStatus() != RideStatus.ACTIVE
@@ -109,8 +129,13 @@ public class RideService {
     }
 
     private void copyRequest(Ride ride, RideRequest request) {
+        validateCoordinates(request);
         ride.setSource(request.getSource().trim());
         ride.setDestination(request.getDestination().trim());
+        ride.setSourceLatitude(request.getSourceLatitude());
+        ride.setSourceLongitude(request.getSourceLongitude());
+        ride.setDestinationLatitude(request.getDestinationLatitude());
+        ride.setDestinationLongitude(request.getDestinationLongitude());
         ride.setDepartureTime(request.getDepartureTime());
         ride.setSeats(request.getSeats());
         ride.setPrice(request.getPrice());
@@ -120,6 +145,21 @@ public class RideService {
         if (request.getSource().trim().equalsIgnoreCase(request.getDestination().trim())) {
             throw new IllegalArgumentException("Source and destination must be different");
         }
+    }
+
+    private void validateCoordinates(RideRequest request) {
+        if (!request.isCoordinatePairComplete()
+                || !isWithinRange(request.getSourceLatitude(), -90, 90)
+                || !isWithinRange(request.getDestinationLatitude(), -90, 90)
+                || !isWithinRange(request.getSourceLongitude(), -180, 180)
+                || !isWithinRange(request.getDestinationLongitude(), -180, 180)) {
+            throw new IllegalArgumentException("Route coordinates are invalid");
+        }
+    }
+
+    private boolean isWithinRange(java.math.BigDecimal value, int minimum, int maximum) {
+        return value == null || (value.compareTo(java.math.BigDecimal.valueOf(minimum)) >= 0
+                && value.compareTo(java.math.BigDecimal.valueOf(maximum)) <= 0);
     }
 
     private String normalizeEmail(String email) {

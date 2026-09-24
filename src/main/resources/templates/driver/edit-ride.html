@@ -26,6 +26,49 @@
                     <p class="ride-field-error" th:if="${#fields.hasErrors('routeDistinct')}" th:errors="*{routeDistinct}"></p>
                 </div>
             </div>
+            <div class="ride-route-fields">
+                <div class="ride-field">
+                    <label for="sourceLatitude">Starting point latitude</label>
+                    <input id="sourceLatitude" type="number" th:field="*{sourceLatitude}" min="-90" max="90" step="any">
+                    <p class="ride-field-error" th:if="${#fields.hasErrors('sourceLatitude')}" th:errors="*{sourceLatitude}"></p>
+                </div>
+                <div class="ride-field">
+                    <label for="sourceLongitude">Starting point longitude</label>
+                    <input id="sourceLongitude" type="number" th:field="*{sourceLongitude}" min="-180" max="180" step="any">
+                    <p class="ride-field-error" th:if="${#fields.hasErrors('sourceLongitude')}" th:errors="*{sourceLongitude}"></p>
+                </div>
+                <div class="ride-field">
+                    <label for="destinationLatitude">Destination latitude</label>
+                    <input id="destinationLatitude" type="number" th:field="*{destinationLatitude}" min="-90" max="90" step="any">
+                    <p class="ride-field-error" th:if="${#fields.hasErrors('destinationLatitude')}" th:errors="*{destinationLatitude}"></p>
+                </div>
+                <div class="ride-field">
+                    <label for="destinationLongitude">Destination longitude</label>
+                    <input id="destinationLongitude" type="number" th:field="*{destinationLongitude}" min="-180" max="180" step="any">
+                    <p class="ride-field-error" th:if="${#fields.hasErrors('destinationLongitude')}" th:errors="*{destinationLongitude}"></p>
+                </div>
+            </div>
+            <p class="ride-field-error" th:if="${#fields.hasErrors('coordinatePairComplete')}" th:errors="*{coordinatePairComplete}"></p>
+            <div class="ride-location-picker"
+                 data-ride-location-picker
+                 th:attr="data-source-latitude=${rideRequest.sourceLatitude},
+                          data-source-longitude=${rideRequest.sourceLongitude},
+                          data-destination-latitude=${rideRequest.destinationLatitude},
+                          data-destination-longitude=${rideRequest.destinationLongitude}">
+                <div class="ride-location-picker-header">
+                    <div>
+                        <h3>Choose locations on the map</h3>
+                        <p>Select a point, then click the map to set it.</p>
+                    </div>
+                    <div class="ride-location-picker-actions" role="group" aria-label="Map location selection">
+                        <button type="button" class="ride-button ride-button--secondary" data-location-target="source">Set starting point</button>
+                        <button type="button" class="ride-button ride-button--secondary" data-location-target="destination">Set destination</button>
+                    </div>
+                </div>
+                <p class="ride-location-picker-status" data-location-status aria-live="polite">Select a location to begin.</p>
+                <p class="ride-location-picker-route" data-location-route aria-live="polite"></p>
+                <div class="ride-location-map" data-location-map aria-label="Map for selecting ride locations"></div>
+            </div>
         </section>
         <section class="ride-form-card">
             <h2>Schedule</h2>
@@ -59,5 +102,7 @@
     </form>
 </main>
 <div th:replace="~{fragments/footer :: footer}"></div>
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<script th:src="@{/js/ride-location-picker.js}"></script>
 </body>
 </html>

@@ -18,7 +18,10 @@
     </div>
 
     <section class="ride-list" th:if="${bookings != null and !#lists.isEmpty(bookings)}" aria-label="Booking requests">
-        <article class="ride-list-card" th:each="booking : ${bookings}">
+        <article class="ride-list-card"
+                 th:each="booking : ${bookings}"
+                 th:id="${'booking-' + booking.id}"
+                 th:classappend="${booking.id == selectedBookingId} ? ' ride-list-card--highlighted' : ''">
             <div class="ride-card-main">
                 <div class="ride-route">
                     <div class="ride-stop ride-stop--source"><span class="ride-stop-marker" aria-hidden="true"></span><h2 th:text="${booking.ride.source}">Source</h2></div>
