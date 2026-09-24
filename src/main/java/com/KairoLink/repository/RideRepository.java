@@ -46,4 +46,27 @@ public interface RideRepository extends JpaRepository<Ride, Long> {
             int decrementSeatsIfAvailable(
                 @Param("rideId") Long rideId,
                 @Param("requestedSeats") int requestedSeats);
+
+            @Query("""
+                select count(ride) from Ride ride
+                where ride.status = com.KairoLink.entity.RideStatus.ACTIVE
+                """)
+            long countByStatusActive();
+
+    @Query("""
+        select ride from Ride ride
+        join fetch ride.driver
+        order by ride.departureTime desc
+        """)
+    List<Ride> findAllRidesWithDriver();
+
+    /**
+     * Returns [RideStatus, count] pairs for the ride-status doughnut chart.
+     */
+    @Query("""
+        select ride.status, count(ride)
+        from Ride ride
+        group by ride.status
+        """)
+    List<Object[]> countByStatusGrouped();
 }

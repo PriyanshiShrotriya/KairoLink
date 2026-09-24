@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/header :: header}">
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<main class="container">
+    <section class="hero">
+        <h1>My Reported Issues</h1>
+        <p>View and track issues you have reported.</p>
+    </section>
+
+    <div th:if="${successMessage}" class="alert alert-success">
+        <p th:text="${successMessage}"></p>
+    </div>
+
+    <div th:if="${issues.isEmpty()}" class="empty-state">
+        <p>You haven't reported any issues yet.</p>
+        <a th:href="@{/reports/new}" class="btn btn-primary">Report an Issue</a>
+    </div>
+
+    <section class="monitoring-table-section" th:unless="${issues.isEmpty()}">
+        <table class="monitoring-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Category</th>
+                    <th>Description</th>
+                    <th>Related Ride</th>
+                    <th>Related Booking</th>
+                    <th>Status</th>
+                    <th>Created</th>
+                    <th>Resolved</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="issue : ${issues}">
+                    <td th:text="${issue.id}"></td>
+                    <td th:text="${issue.category}"></td>
+                    <td>
+                        <div style="max-width: 300px; word-wrap: break-word;" th:text="${issue.description}"></div>
+                    </td>
+                    <td th:text="${issue.ride != null ? issue.ride.id : '-'}"></td>
+                    <td th:text="${issue.booking != null ? issue.booking.id : '-'}"></td>
+                    <td>
+                        <span class="status-badge" th:classappend="${'status-' + issue.status.name().toLowerCase()}" th:text="${issue.status.name()}"></span>
+                    </td>
+                    <td th:text="${#temporals.format(issue.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
+                    <td th:text="${issue.resolvedAt != null ? #temporals.format(issue.resolvedAt, 'yyyy-MM-dd HH:mm') : '-'}"></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="form-actions" style="margin-top: 20px;">
+            <a th:href="@{/reports/new}" class="btn btn-primary">Report Another Issue</a>
+        </div>
+    </section>
+</main>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+<style>
+    .empty-state {
+        padding: 48px 16px;
+        text-align: center;
+        background-color: #f9f9f9;
+        border-radius: 4px;
+        margin: 24px 0;
+    }
+
+    .empty-state p {
+        margin-bottom: 20px;
+        font-size: 16px;
+        color: #666;
+    }
+
+    .monitoring-table-section {
+        margin: 32px 0;
+        overflow-x: auto;
+    }
+
+    .monitoring-table {
+        width: 100%;
+        border-collapse: collapse;
+        border: 1px solid #e0e0e0;
+        background-color: #fff;
+    }
+
+    .monitoring-table thead {
+        background-color: #f5f5f5;
+    }
+
+    .monitoring-table th,
+    .monitoring-table td {
+        padding: 12px 16px;
+        text-align: left;
+        border-bottom: 1px solid #e0e0e0;
+    }
+
+    .monitoring-table th {
+        font-weight: 600;
+        color: #333;
+    }
+
+    .monitoring-table tbody tr:hover {
+        background-color: #f9f9f9;
+    }
+
+    .status-badge {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .status-open {
+        background-color: #fff3cd;
+        color: #856404;
+    }
+
+    .status-in_progress {
+        background-color: #cce5ff;
+        color: #004085;
+    }
+
+    .status-resolved {
+        background-color: #d4edda;
+        color: #155724;
+    }
+
+    .alert {
+        padding: 12px 16px;
+        margin: 16px 0;
+        border-radius: 4px;
+    }
+
+    .alert-success {
+        background-color: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+
+    .form-actions {
+        margin-top: 24px;
+        display: flex;
+        gap: 12px;
+    }
+
+    .btn {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 4px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+        transition: all 0.2s ease;
+    }
+
+    .btn-primary {
+        background-color: #007bff;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background-color: #0056b3;
+    }
+</style>
+</body>
+</html>
