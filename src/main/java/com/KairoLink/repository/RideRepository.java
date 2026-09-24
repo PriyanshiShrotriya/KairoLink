@@ -40,7 +40,7 @@ public interface RideRepository extends JpaRepository<Ride, Long> {
                 update Ride ride
                 set ride.seats = ride.seats - :requestedSeats
                 where ride.id = :rideId
-                  and ride.seats >= :requestedSeats
+                  and ride.seats > :requestedSeats
                   and ride.status = com.KairoLink.entity.RideStatus.ACTIVE
                 """)
             int decrementSeatsIfAvailable(

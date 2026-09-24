@@ -51,10 +51,12 @@ class VehicleFlowTest {
     @Test
     void riderAndAdminAreForbidden() throws Exception {
         mockMvc.perform(get("/vehicle").with(user("rider").roles("RIDER")))
-                .andExpect(status().isForbidden());
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/dashboard"));
 
         mockMvc.perform(get("/vehicle").with(user("admin").roles("ADMIN")))
-                .andExpect(status().isForbidden());
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/dashboard"));
     }
 
     @Test

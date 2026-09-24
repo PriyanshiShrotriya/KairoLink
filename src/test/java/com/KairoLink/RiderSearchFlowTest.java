@@ -25,6 +25,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -41,6 +42,22 @@ class RiderSearchFlowTest {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Test
+    void riderSearchPageOffersCurrentLocationSourceAction() throws Exception {
+        User rider = saveUser("location-search-rider@example.com", Role.RIDER);
+
+        mockMvc.perform(get("/rider/search")
+                        .with(user(rider.getEmail()).roles("RIDER")))
+                .andExpect(status().isOk())
+                .andExpect(view().name("rider/search"))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString(
+                        "data-use-current-location")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString(
+                        "data-current-location-status")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString(
+                        "/js/rider-search-location.js")));
+    }
 
     @Test
     @Transactional
