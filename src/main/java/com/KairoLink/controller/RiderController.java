@@ -1,13 +1,13 @@
 package com.KairoLink.controller;
 
 import com.KairoLink.dto.BookingRequest;
+import com.KairoLink.dto.RiderSearchRequest;
 import com.KairoLink.entity.Booking;
 import com.KairoLink.entity.Ride;
 import com.KairoLink.service.BookingService;
 import com.KairoLink.service.RideService;
 import com.KairoLink.service.VehicleService;
 import jakarta.validation.Valid;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import java.time.LocalDate;
 
@@ -43,19 +42,23 @@ public class RiderController {
 
     @GetMapping("/rider/results")
     public String results(
-            @RequestParam(required = false) String source,
-            @RequestParam(required = false) String destination,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            @Valid @ModelAttribute("searchRequest") RiderSearchRequest searchRequest,
+            BindingResult bindingResult,
             Model model) {
-        String normalizedSource = normalizeOptional(source);
-        String normalizedDestination = normalizeOptional(destination);
-        LocalDate effectiveDate = (date != null || normalizedSource == null || normalizedDestination == null)
-                ? date
+        String normalizedSource = normalizeOptional(searchRequest.getSource());
+        String normalizedDestination = normalizeOptional(searchRequest.getDestination());
+        LocalDate effectiveDate = (searchRequest.getDate() != null
+                || normalizedSource == null || normalizedDestination == null)
+                ? searchRequest.getDate()
                 : LocalDate.now();
         model.addAttribute("source", normalizedSource);
         model.addAttribute("destination", normalizedDestination);
         model.addAttribute("date", effectiveDate);
-        model.addAttribute("rides", rideService.search(source, destination, effectiveDate));
+        model.addAttribute("preferredDepartureTime", searchRequest.getTime());
+        model.addAttribute("timeToleranceMinutes", searchRequest.getTimeToleranceMinutes());
+        model.addAttribute("rides", bindingResult.hasErrors()
+                ? java.util.List.of()
+                : rideService.search(searchRequest.getSource(), searchRequest.getDestination(), effectiveDate));
         return "rider/results";
     }
 

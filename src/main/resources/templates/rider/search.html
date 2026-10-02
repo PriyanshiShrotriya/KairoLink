@@ -44,8 +44,13 @@
                     <input id="date" name="date" type="date">
                 </div>
                 <div class="ride-field">
-                    <label for="time">Time</label>
-                    <input id="time" name="time" type="time">
+                    <label for="preferredDepartureTime">Preferred departure time</label>
+                    <input id="preferredDepartureTime" name="time" type="time">
+                </div>
+                <div class="ride-field">
+                    <label for="timeToleranceMinutes">Time tolerance (minutes)</label>
+                    <input id="timeToleranceMinutes" name="timeToleranceMinutes"
+                           type="number" min="0" max="180" placeholder="30">
                 </div>
                 <div class="ride-field">
                     <label for="seats">Seats</label>
@@ -56,6 +61,10 @@
                     </select>
                 </div>
             </div>
+            <input id="sourceLatitude" name="sourceLatitude" type="hidden">
+            <input id="sourceLongitude" name="sourceLongitude" type="hidden">
+            <input id="destinationLatitude" name="destinationLatitude" type="hidden">
+            <input id="destinationLongitude" name="destinationLongitude" type="hidden">
 
             <button class="ride-button ride-button--primary rider-search-submit" type="submit">Search Rides</button>
         </form>
