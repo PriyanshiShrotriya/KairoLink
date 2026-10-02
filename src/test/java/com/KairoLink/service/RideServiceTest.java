@@ -200,15 +200,13 @@ class RideServiceTest {
     void searchDefaultsToCurrentDateWhenDateIsNull() {
         LocalDate today = LocalDate.now();
         when(rideRepository.searchAvailable(
-                any(), any(), any(), any(), any()))
+                any(), any(), any()))
                 .thenReturn(List.of(new Ride()));
 
         List<Ride> results = rideService.search(" Campus ", " Office ", null);
 
         assertEquals(1, results.size());
         verify(rideRepository).searchAvailable(
-                eq("Campus"),
-                eq("Office"),
                 eq(today.atStartOfDay()),
                 eq(today.plusDays(1).atStartOfDay()),
                 any(LocalDateTime.class));
@@ -218,15 +216,13 @@ class RideServiceTest {
     void searchUsesExplicitDateWhenProvided() {
         LocalDate targetDate = LocalDate.now().plusDays(2);
         when(rideRepository.searchAvailable(
-                any(), any(), any(), any(), any()))
+                any(), any(), any()))
                 .thenReturn(List.of(new Ride()));
 
         List<Ride> results = rideService.search(" Campus ", " Office ", targetDate);
 
         assertEquals(1, results.size());
         verify(rideRepository).searchAvailable(
-                eq("Campus"),
-                eq("Office"),
                 eq(targetDate.atStartOfDay()),
                 eq(targetDate.plusDays(1).atStartOfDay()),
                 any(LocalDateTime.class));

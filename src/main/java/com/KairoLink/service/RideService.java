@@ -59,8 +59,6 @@ public class RideService {
         LocalDate searchDate = (date != null) ? date : LocalDate.now();
         LocalDateTime dayStart = searchDate.atStartOfDay();
         return rideRepository.searchAvailable(
-                source.trim(),
-                destination.trim(),
                 dayStart,
                 dayStart.plusDays(1),
                 LocalDateTime.now());

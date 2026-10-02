@@ -19,18 +19,18 @@ public interface RideRepository extends JpaRepository<Ride, Long> {
         @Query("""
             select ride from Ride ride
           join fetch ride.driver
-            where lower(trim(ride.source)) = lower(trim(:source))
-              and lower(trim(ride.destination)) = lower(trim(:destination))
-              and ride.departureTime >= :dayStart
+            where ride.departureTime >= :dayStart
               and ride.departureTime < :dayEnd
               and ride.departureTime > :now
               and ride.seats > 0
               and ride.status = com.KairoLink.entity.RideStatus.ACTIVE
+              and ride.sourceLatitude is not null
+              and ride.sourceLongitude is not null
+              and ride.destinationLatitude is not null
+              and ride.destinationLongitude is not null
             order by ride.departureTime asc
             """)
         List<Ride> searchAvailable(
-            @Param("source") String source,
-            @Param("destination") String destination,
             @Param("dayStart") LocalDateTime dayStart,
             @Param("dayEnd") LocalDateTime dayEnd,
             @Param("now") LocalDateTime now);
