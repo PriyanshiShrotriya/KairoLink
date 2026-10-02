@@ -58,7 +58,7 @@ public class RiderController {
         model.addAttribute("timeToleranceMinutes", searchRequest.getTimeToleranceMinutes());
         model.addAttribute("rides", bindingResult.hasErrors()
                 ? java.util.List.of()
-                : rideService.search(searchRequest.getSource(), searchRequest.getDestination(), effectiveDate));
+                : rideService.search(searchRequest, effectiveDate));
         return "rider/results";
     }
 

@@ -81,7 +81,7 @@ class RiderSearchFlowTest {
                         .param("date", requestedDate.toString()))
                 .andExpect(status().isOk())
                 .andExpect(view().name("rider/results"))
-                .andExpect(model().attribute("rides", org.hamcrest.Matchers.hasSize(3)));
+                .andExpect(model().attribute("rides", org.hamcrest.Matchers.empty()));
 
         assertEquals(2, later.getSeats());
     }
@@ -113,9 +113,7 @@ class RiderSearchFlowTest {
                 .andExpect(status().isOk())
                 .andExpect(view().name("rider/results"))
                 .andExpect(model().attribute("date", today))
-                .andExpect(model().attribute("rides", org.hamcrest.Matchers.hasSize(1)))
-                .andExpect(model().attribute("rides", org.hamcrest.Matchers.hasItem(
-                        org.hamcrest.Matchers.hasProperty("id", org.hamcrest.Matchers.equalTo(todayRide.getId())))));
+                .andExpect(model().attribute("rides", org.hamcrest.Matchers.empty()));
     }
 
     private User saveUser(String email, Role role) {

@@ -1,11 +1,14 @@
 package com.KairoLink.service;
 
 import com.KairoLink.dto.RideRequest;
+import com.KairoLink.dto.RouteResponse;
+import com.KairoLink.dto.RiderSearchRequest;
 import com.KairoLink.entity.Ride;
 import com.KairoLink.entity.RideStatus;
 import com.KairoLink.entity.Role;
 import com.KairoLink.entity.User;
 import com.KairoLink.exception.RideNotFoundException;
+import com.KairoLink.exception.GeocodingException;
 import com.KairoLink.exception.UserNotFoundException;
 import com.KairoLink.repository.RideRepository;
 import com.KairoLink.repository.UserRepository;
@@ -14,18 +17,34 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.LocalDate;
+import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Service
 public class RideService {
 
+    private static final Logger log = LoggerFactory.getLogger(RideService.class);
     private final UserRepository userRepository;
     private final RideRepository rideRepository;
+    private final OsrmRouteService osrmRouteService;
+    private final RouteMatchingService routeMatchingService;
+    private final NominatimGeocodingService geocodingService;
 
-    public RideService(UserRepository userRepository, RideRepository rideRepository) {
+    public RideService(
+            UserRepository userRepository,
+            RideRepository rideRepository,
+            OsrmRouteService osrmRouteService,
+            RouteMatchingService routeMatchingService,
+            NominatimGeocodingService geocodingService) {
         this.userRepository = userRepository;
         this.rideRepository = rideRepository;
+        this.osrmRouteService = osrmRouteService;
+        this.routeMatchingService = routeMatchingService;
+        this.geocodingService = geocodingService;
     }
 
     @Transactional
@@ -62,6 +81,72 @@ public class RideService {
                 dayStart,
                 dayStart.plusDays(1),
                 LocalDateTime.now());
+    }
+
+    @Transactional
+    public List<Ride> search(
+            RiderSearchRequest request,
+            LocalDate date) {
+        if (request == null || !populateSearchCoordinates(request)) {
+            return List.of();
+        }
+        return search(
+                request.getSource(),
+                request.getDestination(),
+                date,
+                request.getSourceLatitude(),
+                request.getSourceLongitude(),
+                request.getDestinationLatitude(),
+                request.getDestinationLongitude());
+    }
+
+    @Transactional
+    public List<Ride> search(
+            String source,
+            String destination,
+            LocalDate date,
+            BigDecimal pickupLatitude,
+            BigDecimal pickupLongitude,
+            BigDecimal destinationLatitude,
+            BigDecimal destinationLongitude) {
+        if (pickupLatitude == null || pickupLongitude == null
+                || destinationLatitude == null || destinationLongitude == null) {
+            return List.of();
+        }
+        List<Ride> candidates = search(source, destination, date);
+        List<Ride> matches = new ArrayList<>();
+        for (Ride ride : candidates) {
+            try {
+                RouteResponse route = osrmRouteService.calculate(
+                        ride.getSourceLatitude(),
+                        ride.getSourceLongitude(),
+                        ride.getDestinationLatitude(),
+                        ride.getDestinationLongitude());
+                if (routeMatchingService.matches(
+                        ride, route, pickupLatitude, pickupLongitude,
+                        destinationLatitude, destinationLongitude)) {
+                    matches.add(ride);
+                }
+            } catch (RuntimeException exception) {
+                log.warn("Skipping ride {} because its route could not be matched", ride.getId(), exception);
+            }
+        }
+        return matches;
+    }
+
+    private boolean populateSearchCoordinates(RiderSearchRequest request) {
+        try {
+            var pickup = geocodingService.search(request.getSource());
+            var destination = geocodingService.search(request.getDestination());
+            request.setSourceLatitude(pickup.latitude());
+            request.setSourceLongitude(pickup.longitude());
+            request.setDestinationLatitude(destination.latitude());
+            request.setDestinationLongitude(destination.longitude());
+            return true;
+        } catch (GeocodingException exception) {
+            log.warn("Rider search location could not be geocoded", exception);
+            return false;
+        }
     }
 
     @Transactional
