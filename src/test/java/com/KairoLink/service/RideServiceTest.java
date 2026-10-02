@@ -35,6 +35,7 @@ class RideServiceTest {
     private OsrmRouteService osrmRouteService;
     private RouteMatchingService routeMatchingService;
     private NominatimGeocodingService geocodingService;
+    private TimeMatchingService timeMatchingService;
     private RideService rideService;
 
     @BeforeEach
@@ -44,9 +45,10 @@ class RideServiceTest {
         osrmRouteService = mock(OsrmRouteService.class);
         routeMatchingService = mock(RouteMatchingService.class);
         geocodingService = mock(NominatimGeocodingService.class);
+        timeMatchingService = mock(TimeMatchingService.class);
         rideService = new RideService(
                 userRepository, rideRepository, osrmRouteService,
-                routeMatchingService, geocodingService);
+                routeMatchingService, geocodingService, timeMatchingService);
     }
 
     @Test
@@ -276,6 +278,7 @@ class RideServiceTest {
                                 List.of(new BigDecimal("0"), new BigDecimal("1")))));
         when(routeMatchingService.matches(
                 eq(candidate), any(), any(), any(), any(), any())).thenReturn(true);
+        when(timeMatchingService.matches(eq(candidate), any(), any())).thenReturn(true);
 
         List<Ride> results = rideService.search(
                 "Campus", "Office", null,

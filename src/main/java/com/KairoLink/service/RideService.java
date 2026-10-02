@@ -33,18 +33,21 @@ public class RideService {
     private final OsrmRouteService osrmRouteService;
     private final RouteMatchingService routeMatchingService;
     private final NominatimGeocodingService geocodingService;
+    private final TimeMatchingService timeMatchingService;
 
     public RideService(
             UserRepository userRepository,
             RideRepository rideRepository,
             OsrmRouteService osrmRouteService,
             RouteMatchingService routeMatchingService,
-            NominatimGeocodingService geocodingService) {
+            NominatimGeocodingService geocodingService,
+            TimeMatchingService timeMatchingService) {
         this.userRepository = userRepository;
         this.rideRepository = rideRepository;
         this.osrmRouteService = osrmRouteService;
         this.routeMatchingService = routeMatchingService;
         this.geocodingService = geocodingService;
+        this.timeMatchingService = timeMatchingService;
     }
 
     @Transactional
@@ -97,7 +100,9 @@ public class RideService {
                 request.getSourceLatitude(),
                 request.getSourceLongitude(),
                 request.getDestinationLatitude(),
-                request.getDestinationLongitude());
+                request.getDestinationLongitude(),
+                request,
+                date);
     }
 
     @Transactional
@@ -108,7 +113,30 @@ public class RideService {
             BigDecimal pickupLatitude,
             BigDecimal pickupLongitude,
             BigDecimal destinationLatitude,
-            BigDecimal destinationLongitude) {
+            BigDecimal destinationLongitude
+            ) {
+        RiderSearchRequest request = new RiderSearchRequest();
+        request.setSource(source);
+        request.setDestination(destination);
+        request.setSourceLatitude(pickupLatitude);
+        request.setSourceLongitude(pickupLongitude);
+        request.setDestinationLatitude(destinationLatitude);
+        request.setDestinationLongitude(destinationLongitude);
+        return search(source, destination, date, pickupLatitude, pickupLongitude,
+                destinationLatitude, destinationLongitude, request, date);
+    }
+
+    @Transactional
+    public List<Ride> search(
+            String source,
+            String destination,
+            LocalDate date,
+            BigDecimal pickupLatitude,
+            BigDecimal pickupLongitude,
+            BigDecimal destinationLatitude,
+            BigDecimal destinationLongitude,
+            RiderSearchRequest request,
+            LocalDate searchDate) {
         if (pickupLatitude == null || pickupLongitude == null
                 || destinationLatitude == null || destinationLongitude == null) {
             return List.of();
@@ -125,7 +153,9 @@ public class RideService {
                 if (routeMatchingService.matches(
                         ride, route, pickupLatitude, pickupLongitude,
                         destinationLatitude, destinationLongitude)) {
-                    matches.add(ride);
+                    if (timeMatchingService.matches(ride, request, searchDate)) {
+                        matches.add(ride);
+                    }
                 }
             } catch (RuntimeException exception) {
                 log.warn("Skipping ride {} because its route could not be matched", ride.getId(), exception);
