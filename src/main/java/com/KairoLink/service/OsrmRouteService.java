@@ -5,6 +5,8 @@ import com.KairoLink.exception.RouteCalculationException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -14,6 +16,7 @@ import java.util.Map;
 @Service
 public class OsrmRouteService {
 
+    private static final Logger log = LoggerFactory.getLogger(OsrmRouteService.class);
     private final RestClient restClient;
 
     public OsrmRouteService(
@@ -34,12 +37,14 @@ public class OsrmRouteService {
                             .queryParam("overview", "full")
                             .queryParam("geometries", "geojson")
                             .build(coordinates))
+                    .header("Accept-Encoding", "identity")
                     .retrieve()
                     .body(Map.class);
             return parseResponse(response);
         } catch (RouteCalculationException exception) {
             throw exception;
         } catch (RuntimeException exception) {
+            log.warn("OSRM route request failed", exception);
             throw new RouteCalculationException("Route service is unavailable", exception);
         }
     }

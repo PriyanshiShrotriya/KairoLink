@@ -11,6 +11,7 @@ import java.math.BigDecimal;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.header;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withServerError;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
@@ -23,6 +24,7 @@ class OsrmRouteServiceTest {
         MockRestServiceServer server = MockRestServiceServer.bindTo(builder).build();
         server.expect(requestTo("http://osrm.test/route/v1/driving/77.2090%2C28.6139%3B77.3910%2C28.5355"
                         + "?overview=full&geometries=geojson"))
+                .andExpect(header("Accept-Encoding", "identity"))
                 .andRespond(withSuccess("""
                         {
                           "code": "Ok",
