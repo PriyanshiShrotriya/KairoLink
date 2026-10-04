@@ -145,16 +145,6 @@ public class RideService {
         List<Ride> matches = new ArrayList<>();
         for (Ride ride : candidates) {
             try {
-                log.info(
-                        "Ride candidate: id={}, status={}, seats={}, departure={}, source=({}, {}), destination=({}, {})",
-                        ride.getId(),
-                        ride.getStatus(),
-                        ride.getSeats(),
-                        ride.getDepartureTime(),
-                        ride.getSourceLatitude(),
-                        ride.getSourceLongitude(),
-                        ride.getDestinationLatitude(),
-                        ride.getDestinationLongitude());
                 RouteResponse route = osrmRouteService.calculate(
                         ride.getSourceLatitude(),
                         ride.getSourceLongitude(),
@@ -163,10 +153,8 @@ public class RideService {
                 boolean routeMatches = routeMatchingService.matches(
                         ride, route, pickupLatitude, pickupLongitude,
                         destinationLatitude, destinationLongitude);
-                log.info("Ride {} route match result: {}", ride.getId(), routeMatches);
                 if (routeMatches) {
                     boolean timeMatches = timeMatchingService.matches(ride, request, searchDate);
-                    log.info("Ride {} time match result: {}", ride.getId(), timeMatches);
                     if (timeMatches) {
                         matches.add(ride);
                     }
@@ -182,14 +170,6 @@ public class RideService {
         try {
             var pickup = geocodingService.search(request.getSource());
             var destination = geocodingService.search(request.getDestination());
-            log.info(
-                    "Rider geocoding: source='{}' -> ({}, {}), destination='{}' -> ({}, {})",
-                    request.getSource(),
-                    pickup.latitude(),
-                    pickup.longitude(),
-                    request.getDestination(),
-                    destination.latitude(),
-                    destination.longitude());
             request.setSourceLatitude(pickup.latitude());
             request.setSourceLongitude(pickup.longitude());
             request.setDestinationLatitude(destination.latitude());
