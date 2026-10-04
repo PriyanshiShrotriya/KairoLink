@@ -39,7 +39,6 @@ public class RouteMatchingService {
         Projection pickup = project(route.geometry(), pickupLatitude, pickupLongitude);
         Projection destination = project(route.geometry(), destinationLatitude, destinationLongitude);
         if (pickup == null || destination == null
-                || pickup.outsideRoute() || destination.outsideRoute()
                 || pickup.distanceMeters() > proximityThresholdMeters
                 || destination.distanceMeters() > proximityThresholdMeters) {
             return false;
