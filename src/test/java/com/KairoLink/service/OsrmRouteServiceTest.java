@@ -11,6 +11,8 @@ import java.math.BigDecimal;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.header;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.withServerError;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 
@@ -22,6 +24,7 @@ class OsrmRouteServiceTest {
         MockRestServiceServer server = MockRestServiceServer.bindTo(builder).build();
         server.expect(requestTo("http://osrm.test/route/v1/driving/77.2090%2C28.6139%3B77.3910%2C28.5355"
                         + "?overview=full&geometries=geojson"))
+                .andExpect(header("Accept-Encoding", "identity"))
                 .andRespond(withSuccess("""
                         {
                           "code": "Ok",
@@ -55,5 +58,69 @@ class OsrmRouteServiceTest {
         assertThrows(RouteCalculationException.class, () -> service.calculate(
                 new BigDecimal("91"), new BigDecimal("77"),
                 new BigDecimal("28"), new BigDecimal("77")));
+    }
+
+    @Test
+    void rejectsOsrmFailureWithoutCreatingRouteResult() {
+        RestClient.Builder builder = RestClient.builder().baseUrl("http://osrm.test");
+        MockRestServiceServer server = MockRestServiceServer.bindTo(builder).build();
+        server.expect(requestTo("http://osrm.test/route/v1/driving/77%2C28%3B77.1%2C28.1"
+                        + "?overview=full&geometries=geojson"))
+                .andRespond(withServerError());
+
+        OsrmRouteService service = new OsrmRouteService(builder, "http://osrm.test");
+
+        assertThrows(RouteCalculationException.class, () -> service.calculate(
+                new BigDecimal("28"), new BigDecimal("77"),
+                new BigDecimal("28.1"), new BigDecimal("77.1")));
+        server.verify();
+    }
+
+    @Test
+    void rejectsNoRouteResponse() {
+        RestClient.Builder builder = RestClient.builder().baseUrl("http://osrm.test");
+        MockRestServiceServer server = MockRestServiceServer.bindTo(builder).build();
+        server.expect(requestTo("http://osrm.test/route/v1/driving/77%2C28%3B77.1%2C28.1"
+                        + "?overview=full&geometries=geojson"))
+                .andRespond(withSuccess("""
+                        {
+                          "code": "NoRoute",
+                          "routes": []
+                        }
+                        """, APPLICATION_JSON));
+
+        OsrmRouteService service = new OsrmRouteService(builder, "http://osrm.test");
+
+        assertThrows(RouteCalculationException.class, () -> service.calculate(
+                new BigDecimal("28"), new BigDecimal("77"),
+                new BigDecimal("28.1"), new BigDecimal("77.1")));
+        server.verify();
+    }
+
+    @Test
+    void rejectsMalformedRouteResponse() {
+        RestClient.Builder builder = RestClient.builder().baseUrl("http://osrm.test");
+        MockRestServiceServer server = MockRestServiceServer.bindTo(builder).build();
+        server.expect(requestTo("http://osrm.test/route/v1/driving/77%2C28%3B77.1%2C28.1"
+                        + "?overview=full&geometries=geojson"))
+                .andRespond(withSuccess("""
+                        {
+                          "code": "Ok",
+                          "routes": [{
+                            "distance": "not-a-number",
+                            "duration": 100,
+                            "geometry": {
+                              "coordinates": [[77, 28]]
+                            }
+                          }]
+                        }
+                        """, APPLICATION_JSON));
+
+        OsrmRouteService service = new OsrmRouteService(builder, "http://osrm.test");
+
+        assertThrows(RouteCalculationException.class, () -> service.calculate(
+                new BigDecimal("28"), new BigDecimal("77"),
+                new BigDecimal("28.1"), new BigDecimal("77.1")));
+        server.verify();
     }
 }

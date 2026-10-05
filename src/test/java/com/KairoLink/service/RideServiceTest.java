@@ -1,6 +1,8 @@
 package com.KairoLink.service;
 
 import com.KairoLink.dto.RideRequest;
+import com.KairoLink.dto.RouteResponse;
+import com.KairoLink.dto.RiderSearchRequest;
 import com.KairoLink.entity.Ride;
 import com.KairoLink.entity.RideStatus;
 import com.KairoLink.entity.Role;
@@ -30,13 +32,23 @@ class RideServiceTest {
 
     private UserRepository userRepository;
     private RideRepository rideRepository;
+    private OsrmRouteService osrmRouteService;
+    private RouteMatchingService routeMatchingService;
+    private NominatimGeocodingService geocodingService;
+    private TimeMatchingService timeMatchingService;
     private RideService rideService;
 
     @BeforeEach
     void setUp() {
         userRepository = mock(UserRepository.class);
         rideRepository = mock(RideRepository.class);
-        rideService = new RideService(userRepository, rideRepository);
+        osrmRouteService = mock(OsrmRouteService.class);
+        routeMatchingService = mock(RouteMatchingService.class);
+        geocodingService = mock(NominatimGeocodingService.class);
+        timeMatchingService = mock(TimeMatchingService.class);
+        rideService = new RideService(
+                userRepository, rideRepository, osrmRouteService,
+                routeMatchingService, geocodingService, timeMatchingService);
     }
 
     @Test
@@ -200,15 +212,13 @@ class RideServiceTest {
     void searchDefaultsToCurrentDateWhenDateIsNull() {
         LocalDate today = LocalDate.now();
         when(rideRepository.searchAvailable(
-                any(), any(), any(), any(), any()))
+                any(), any(), any()))
                 .thenReturn(List.of(new Ride()));
 
         List<Ride> results = rideService.search(" Campus ", " Office ", null);
 
         assertEquals(1, results.size());
         verify(rideRepository).searchAvailable(
-                eq("Campus"),
-                eq("Office"),
                 eq(today.atStartOfDay()),
                 eq(today.plusDays(1).atStartOfDay()),
                 any(LocalDateTime.class));
@@ -218,15 +228,13 @@ class RideServiceTest {
     void searchUsesExplicitDateWhenProvided() {
         LocalDate targetDate = LocalDate.now().plusDays(2);
         when(rideRepository.searchAvailable(
-                any(), any(), any(), any(), any()))
+                any(), any(), any()))
                 .thenReturn(List.of(new Ride()));
 
         List<Ride> results = rideService.search(" Campus ", " Office ", targetDate);
 
         assertEquals(1, results.size());
         verify(rideRepository).searchAvailable(
-                eq("Campus"),
-                eq("Office"),
                 eq(targetDate.atStartOfDay()),
                 eq(targetDate.plusDays(1).atStartOfDay()),
                 any(LocalDateTime.class));
@@ -241,12 +249,88 @@ class RideServiceTest {
         org.mockito.Mockito.verifyNoInteractions(rideRepository);
     }
 
+    @Test
+    void geographicSearchRejectsMissingRiderCoordinates() {
+        assertEquals(List.of(), rideService.search(
+                "Campus", "Office", null, null, null, null, null));
+        org.mockito.Mockito.verifyNoInteractions(rideRepository, osrmRouteService);
+    }
+
+    @Test
+    void geographicSearchMatchesCandidateUsingDriverRoute() {
+        User driver = driver("driver@example.com");
+        Ride candidate = ride(driver, LocalDateTime.now().plusHours(1));
+        candidate.setSourceLatitude(new BigDecimal("0"));
+        candidate.setSourceLongitude(new BigDecimal("0"));
+        candidate.setDestinationLatitude(new BigDecimal("1"));
+        candidate.setDestinationLongitude(new BigDecimal("0"));
+        when(rideRepository.searchAvailable(any(), any(), any())).thenReturn(List.of(candidate));
+        when(osrmRouteService.calculate(
+                candidate.getSourceLatitude(),
+                candidate.getSourceLongitude(),
+                candidate.getDestinationLatitude(),
+                candidate.getDestinationLongitude()))
+                .thenReturn(new RouteResponse(
+                        new BigDecimal("111000"),
+                        new BigDecimal("1000"),
+                        List.of(
+                                List.of(new BigDecimal("0"), new BigDecimal("0")),
+                                List.of(new BigDecimal("0"), new BigDecimal("1")))));
+        when(routeMatchingService.matches(
+                eq(candidate), any(), any(), any(), any(), any())).thenReturn(true);
+        when(timeMatchingService.matches(eq(candidate), any(), any())).thenReturn(true);
+
+        List<Ride> results = rideService.search(
+                "Campus", "Office", null,
+                new BigDecimal("0.25"), new BigDecimal("0"),
+                new BigDecimal("0.75"), new BigDecimal("0"));
+
+        assertEquals(List.of(candidate), results);
+    }
+
+    @Test
+    void riderSearchGeocodesBothLocationsBeforeRouteMatching() {
+        RiderSearchRequest request = riderSearchRequest();
+        when(geocodingService.search("Work"))
+                .thenReturn(new com.KairoLink.dto.GeocodingResponse(
+                        new BigDecimal("28.60"), new BigDecimal("77.20"), "Work"));
+        when(geocodingService.search("Home"))
+                .thenReturn(new com.KairoLink.dto.GeocodingResponse(
+                        new BigDecimal("28.70"), new BigDecimal("77.30"), "Home"));
+
+        rideService.search(request, LocalDate.now());
+
+        assertEquals(new BigDecimal("28.60"), request.getSourceLatitude());
+        assertEquals(new BigDecimal("77.20"), request.getSourceLongitude());
+        assertEquals(new BigDecimal("28.70"), request.getDestinationLatitude());
+        assertEquals(new BigDecimal("77.30"), request.getDestinationLongitude());
+        org.mockito.Mockito.verify(geocodingService).search("Work");
+        org.mockito.Mockito.verify(geocodingService).search("Home");
+    }
+
+    @Test
+    void riderSearchReturnsNoMatchesWhenGeocodingFails() {
+        RiderSearchRequest request = riderSearchRequest();
+        when(geocodingService.search("Work"))
+                .thenThrow(new com.KairoLink.exception.GeocodingException("No location was found"));
+
+        assertEquals(List.of(), rideService.search(request, LocalDate.now()));
+        org.mockito.Mockito.verifyNoInteractions(rideRepository, osrmRouteService);
+    }
+
     private User driver(String email) {
         User driver = new User();
         driver.setId(7L);
         driver.setEmail(email);
         driver.setRoles(Set.of(Role.DRIVER));
         return driver;
+    }
+
+    private RiderSearchRequest riderSearchRequest() {
+        RiderSearchRequest request = new RiderSearchRequest();
+        request.setSource("Work");
+        request.setDestination("Home");
+        return request;
     }
 
     private Ride ride(User driver, LocalDateTime departureTime) {

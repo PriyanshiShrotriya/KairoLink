@@ -71,6 +71,8 @@ class RiderSearchFlowTest {
         saveRide(driver, "Campus", "Office", requestedDate.atTime(9, 30), 2, RideStatus.CANCELLED);
         saveRide(driver, "Campus", "Office", LocalDateTime.now().minusDays(1), 2, RideStatus.ACTIVE);
         saveRide(driver, "Other", "Office", requestedDate.atTime(9, 0), 2, RideStatus.ACTIVE);
+        saveRideWithoutCoordinates(
+                driver, "Different", "Route", requestedDate.atTime(11, 0), 2, RideStatus.ACTIVE);
 
         mockMvc.perform(get("/rider/results")
                         .with(user(rider.getEmail()).roles("RIDER"))
@@ -79,7 +81,7 @@ class RiderSearchFlowTest {
                         .param("date", requestedDate.toString()))
                 .andExpect(status().isOk())
                 .andExpect(view().name("rider/results"))
-                .andExpect(model().attribute("rides", org.hamcrest.Matchers.hasSize(2)));
+                .andExpect(model().attribute("rides", org.hamcrest.Matchers.empty()));
 
         assertEquals(2, later.getSeats());
     }
@@ -111,9 +113,7 @@ class RiderSearchFlowTest {
                 .andExpect(status().isOk())
                 .andExpect(view().name("rider/results"))
                 .andExpect(model().attribute("date", today))
-                .andExpect(model().attribute("rides", org.hamcrest.Matchers.hasSize(1)))
-                .andExpect(model().attribute("rides", org.hamcrest.Matchers.hasItem(
-                        org.hamcrest.Matchers.hasProperty("id", org.hamcrest.Matchers.equalTo(todayRide.getId())))));
+                .andExpect(model().attribute("rides", org.hamcrest.Matchers.empty()));
     }
 
     private User saveUser(String email, Role role) {
@@ -127,6 +127,28 @@ class RiderSearchFlowTest {
     }
 
     private Ride saveRide(
+            User driver,
+            String source,
+            String destination,
+            LocalDateTime departureTime,
+            int seats,
+            RideStatus status) {
+        Ride ride = new Ride();
+        ride.setDriver(driver);
+        ride.setSource(source);
+        ride.setDestination(destination);
+        ride.setSourceLatitude(new BigDecimal("28.613900"));
+        ride.setSourceLongitude(new BigDecimal("77.209000"));
+        ride.setDestinationLatitude(new BigDecimal("28.535500"));
+        ride.setDestinationLongitude(new BigDecimal("77.391000"));
+        ride.setDepartureTime(departureTime);
+        ride.setSeats(seats);
+        ride.setPrice(BigDecimal.TEN);
+        ride.setStatus(status);
+        return rideRepository.saveAndFlush(ride);
+    }
+
+    private Ride saveRideWithoutCoordinates(
             User driver,
             String source,
             String destination,

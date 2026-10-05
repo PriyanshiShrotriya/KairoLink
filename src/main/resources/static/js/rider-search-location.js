@@ -1,5 +1,7 @@
 (function () {
     var sourceInput = document.getElementById("source");
+    var sourceLatitudeInput = document.getElementById("sourceLatitude");
+    var sourceLongitudeInput = document.getElementById("sourceLongitude");
     var locationButton = document.querySelector("[data-use-current-location]");
     var status = document.querySelector("[data-current-location-status]");
 
@@ -21,6 +23,10 @@
     sourceInput.addEventListener("input", function () {
         requestVersion++;
         setBusy(false);
+        if (sourceLatitudeInput && sourceLongitudeInput) {
+            sourceLatitudeInput.value = "";
+            sourceLongitudeInput.value = "";
+        }
     });
 
     locationButton.addEventListener("click", function () {
@@ -58,6 +64,10 @@
                         throw new Error("Address was not found");
                     }
                     sourceInput.value = location.displayName;
+                    if (sourceLatitudeInput && sourceLongitudeInput) {
+                        sourceLatitudeInput.value = position.coords.latitude;
+                        sourceLongitudeInput.value = position.coords.longitude;
+                    }
                     setStatus("Current location used as your starting point. You can edit it if needed.");
                 })
                 .catch(function () {

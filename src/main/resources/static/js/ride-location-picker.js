@@ -34,6 +34,7 @@
     var sourceTextManuallyEdited = false;
     var geocodingEnabled = picker.dataset.useCurrentLocation === "true";
     var geocodingRequest = {source: 0, destination: 0};
+    var sourceSearchTimer = null;
     var destinationSearchTimer = null;
     var sourceInput = document.getElementById("source");
     var destinationInput = document.getElementById("destination");
@@ -165,6 +166,48 @@
             delete markers.destination;
         }
         requestRoute();
+    }
+
+    function clearSourceCoordinates() {
+        geocodingRequest.source++;
+        fields.source.latitude.value = "";
+        fields.source.longitude.value = "";
+        if (markers.source) {
+            markers.source.remove();
+            delete markers.source;
+        }
+        requestRoute();
+    }
+
+    function searchSource() {
+        var query = sourceInput.value.trim();
+        if (!query) {
+            clearSourceCoordinates();
+            return;
+        }
+        var requestId = ++geocodingRequest.source;
+        fetch("/api/geocoding/search?query=" + encodeURIComponent(query))
+            .then(function (response) {
+                if (!response.ok) {
+                    throw new Error("Source geocoding failed");
+                }
+                return response.json();
+            })
+            .then(function (location) {
+                setGeocodedLocation("source", location, requestId);
+            })
+            .catch(function () {
+                if (requestId === geocodingRequest.source) {
+                    updateStatus("Starting point was not found. Select it on the map.");
+                }
+            });
+    }
+
+    function scheduleSourceSearch() {
+        if (sourceSearchTimer !== null) {
+            window.clearTimeout(sourceSearchTimer);
+        }
+        sourceSearchTimer = window.setTimeout(searchSource, 500);
     }
 
     function searchDestination() {
@@ -323,6 +366,7 @@
         }
         if (activeTarget === "source") {
             sourceManuallySelected = true;
+            sourceTextManuallyEdited = false;
             geocodingRequest.source++;
         }
         if (activeTarget === "destination") {
@@ -352,6 +396,8 @@
     if (geocodingEnabled) {
         sourceInput.addEventListener("input", function () {
             sourceTextManuallyEdited = true;
+            clearSourceCoordinates();
+            scheduleSourceSearch();
         });
         destinationInput.addEventListener("input", function () {
             clearDestinationCoordinates();
