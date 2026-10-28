@@ -1,6 +1,7 @@
 package com.KairoLink.repository;
 
 import com.KairoLink.entity.Ride;
+import com.KairoLink.entity.RideStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -9,12 +10,16 @@ import org.springframework.data.repository.query.Param;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.Collection;
 
 public interface RideRepository extends JpaRepository<Ride, Long> {
 
     List<Ride> findByDriverIdOrderByDepartureTimeAsc(Long driverId);
 
     Optional<Ride> findByIdAndDriverId(Long id, Long driverId);
+
+    boolean existsByDriverIdAndDepartureTimeAndStatusIn(
+            Long driverId, LocalDateTime departureTime, Collection<RideStatus> statuses);
 
         @Query("""
             select ride from Ride ride

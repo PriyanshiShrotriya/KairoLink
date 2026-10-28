@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/header :: header}"></head>
+<body class="ride-page">
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+<main class="ride-shell">
+    <header class="ride-page-header">
+        <span class="ride-accent" aria-hidden="true"></span>
+        <p class="rider-eyebrow">ROUND-TRIP REQUEST</p>
+        <h1>Request a return journey</h1>
+        <p>
+            <span th:text="${booking.ride.destination}">Destination</span>
+            to <span th:text="${booking.ride.source}">Source</span>
+            with <span th:text="${booking.ride.driver.name}">your driver</span>.
+        </p>
+    </header>
+
+    <div class="ride-notices" role="note">
+        <p>Your preferred return time is a request, not a confirmed departure time. Your driver must approve the return journey.</p>
+    </div>
+
+    <form class="ride-form" th:action="@{/rider/booking/{id}/round-trip(id=${booking.id})}"
+          th:object="${roundTripForm}" method="post">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+        <label>Return pickup
+            <input type="text" th:field="*{returnPickup}" required maxlength="150">
+            <span class="form-error" th:errors="*{returnPickup}"></span>
+        </label>
+        <label>Return destination
+            <input type="text" th:field="*{returnDestination}" required maxlength="150">
+            <span class="form-error" th:errors="*{returnDestination}"></span>
+        </label>
+        <label>Preferred return date
+            <input type="date" th:field="*{requestedReturnDate}" required>
+            <span class="form-error" th:errors="*{requestedReturnDate}"></span>
+        </label>
+        <label>Preferred return time
+            <input type="time" th:field="*{requestedReturnTime}" required>
+            <span class="form-error" th:errors="*{requestedReturnTime}"></span>
+        </label>
+        <label>Message to driver (optional)
+            <textarea th:field="*{passengerMessage}" maxlength="1000" rows="4"></textarea>
+            <span class="form-error" th:errors="*{passengerMessage}"></span>
+        </label>
+        <div class="ride-card-actions">
+            <button class="ride-button ride-button--primary" type="submit">Submit request</button>
+            <a class="ride-button ride-button--secondary" th:href="@{/rider/bookings}">Cancel</a>
+        </div>
+    </form>
+</main>
+<div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

@@ -27,6 +27,7 @@ public class SecurityConfig {
                         .requestMatchers("/dashboard/admin").hasRole("ADMIN")
                         .requestMatchers("/rider/**").hasRole("RIDER")
                         .requestMatchers("/driver/bookings/**").hasRole("DRIVER")
+                        .requestMatchers("/driver/round-trip-requests/**").hasRole("DRIVER")
                         .requestMatchers("/vehicle/**").hasRole("DRIVER")
                         .requestMatchers("/rides/*/rate").hasAnyRole("RIDER", "DRIVER")
                         .requestMatchers("/rides/**").hasRole("DRIVER")
