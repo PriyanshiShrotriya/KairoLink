@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{fragments/header :: header}"></head>
-<body class="ride-page rider-page">
+<body class="ride-page rider-page rider-bookings-page">
 <div th:replace="~{fragments/navbar :: navbar}"></div>
 
 <main class="ride-shell rider-bookings-shell">
@@ -11,6 +11,11 @@
         <h1>My Bookings</h1>
         <p>Keep track of your requested and confirmed shared rides.</p>
     </header>
+
+    <div class="ride-notices" role="status">
+        <p th:if="${param.roundTripRequested}">Return request submitted. Your driver will review it.</p>
+        <p th:if="${param.roundTripCancelled}">Return request cancelled.</p>
+    </div>
 
     <nav class="ride-status-tabs rider-booking-tabs" aria-label="Booking status filters">
         <span class="ride-status-tab ride-status-tab--active">All bookings <b th:if="${bookings != null}" th:text="${#lists.size(bookings)}">0</b><b th:unless="${bookings != null}">4</b></span>
@@ -45,6 +50,15 @@
                 <span class="rider-booking-message" th:if="${booking.status != null and booking.status.name() == 'REJECTED'}">Driver declined the booking</span>
                 <span class="rider-booking-message" th:if="${booking.status != null and booking.status.name() == 'CANCELLED'}">Booking cancelled</span>
                 <a class="ride-button ride-button--secondary" th:href="@{/rider/ride/{id}(id=${booking.ride.id})}">View Ride</a>
+                <a class="ride-button ride-button--primary"
+                   th:if="${roundTripEligibleBookingIds != null and #lists.contains(roundTripEligibleBookingIds, booking.id)}"
+                   th:href="@{/rider/booking/{id}/round-trip(id=${booking.id})}">Request Round Trip</a>
+                <span class="ride-status-badge"
+                      th:classappend="${' ride-status-badge--' + #strings.toLowerCase(roundTripByBookingId[booking.id].status.name())}"
+                      th:if="${roundTripByBookingId != null and roundTripByBookingId[booking.id] != null}"
+                      th:text="${#strings.capitalize(#strings.toLowerCase(roundTripByBookingId[booking.id].status.name()))}">
+                    Pending
+                </span>
             </div>
             <div class="rider-live-location-session"
                  data-rider-live-location-session
@@ -63,6 +77,40 @@
                 <p class="driver-location-status"
                    data-rider-location-status
                    role="status">Loading route and driver location...</p>
+            </div>
+        </article>
+    </section>
+
+    <section class="ride-list" th:if="${roundTripRequests != null and !#lists.isEmpty(roundTripRequests)}"
+             aria-label="Round-trip requests">
+        <header class="ride-page-header">
+            <h2>Round-trip requests</h2>
+            <p>Track return journeys requested from your confirmed drivers.</p>
+        </header>
+        <article class="ride-list-card" th:each="request : ${roundTripRequests}">
+            <div class="ride-card-main">
+                <div class="ride-route">
+                    <div class="ride-stop ride-stop--source"><span class="ride-stop-marker" aria-hidden="true"></span><h2 th:text="${request.returnPickup}">Pickup</h2></div>
+                    <div class="ride-route-connector" aria-hidden="true"></div>
+                    <div class="ride-stop ride-stop--destination"><span class="ride-stop-marker" aria-hidden="true"></span><h2 th:text="${request.returnDestination}">Destination</h2></div>
+                </div>
+                <span class="ride-status-badge"
+                      th:classappend="${' ride-status-badge--' + #strings.toLowerCase(request.status.name())}"
+                      th:text="${request.status}">PENDING</span>
+            </div>
+            <div class="ride-card-meta">
+                <span>Requested: <b th:text="${request.requestedReturnDate}">Date</b> at <b th:text="${request.requestedReturnTime}">Time</b></span>
+                <span th:if="${request.confirmedReturnRide != null}">
+                    Confirmed: <b th:text="${#temporals.format(request.confirmedReturnRide.departureTime, 'dd MMMM yyyy')}">Date</b>
+                    at <b th:text="${#temporals.format(request.confirmedReturnRide.departureTime, 'h:mm a')}">Time</b>
+                </span>
+            </div>
+            <div class="rider-booking-footer" th:if="${request.status.name() == 'PENDING'}">
+                <span class="rider-booking-message">Waiting for driver approval</span>
+                <form th:action="@{/rider/round-trip/{id}/cancel(id=${request.id})}" method="post">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                    <button class="ride-button ride-button--danger" type="submit">Cancel request</button>
+                </form>
             </div>
         </article>
     </section>

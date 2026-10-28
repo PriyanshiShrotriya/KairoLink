@@ -7,6 +7,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.web.multipart.MultipartFile;
 
 @Getter
 @Setter
@@ -27,4 +28,8 @@ public class VehicleRequest {
 
     @Size(max = 255)
     private String photoReference;
+
+    private MultipartFile vehiclePhoto;
+
+    private boolean removePhoto;
 }

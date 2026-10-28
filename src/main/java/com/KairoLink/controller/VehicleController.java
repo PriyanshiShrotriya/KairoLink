@@ -11,6 +11,15 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 @Controller
 public class VehicleController {
@@ -44,8 +53,45 @@ public class VehicleController {
             return "vehicle/edit";
         }
 
-        vehicleService.saveVehicle(authentication.getName(), request);
+        try {
+            vehicleService.saveVehicle(authentication.getName(), request);
+        } catch (IllegalArgumentException exception) {
+            bindingResult.reject("vehiclePhoto", exception.getMessage());
+            return "vehicle/edit";
+        }
         return "redirect:/vehicle?updated";
+    }
+
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public String handlePhotoTooLarge(
+            Authentication authentication,
+            Model model) {
+        VehicleRequest request = new VehicleRequest();
+        vehicleService.getVehicle(authentication.getName()).ifPresent(vehicle -> copyToRequest(vehicle, request));
+        model.addAttribute("vehicleRequest", request);
+        model.addAttribute("vehiclePhotoError", "Vehicle photos must be 5 MB or smaller.");
+        return "vehicle/edit";
+    }
+
+    @GetMapping("/vehicle/photos/{filename:.+}")
+    public ResponseEntity<Resource> vehiclePhoto(@PathVariable String filename) {
+        Path path = vehicleService.resolvePhoto("/vehicle/photos/" + filename);
+        if (path == null || !Files.isRegularFile(path)) {
+            return ResponseEntity.notFound().build();
+        }
+        MediaType contentType = mediaType(filename);
+        return ResponseEntity.ok().contentType(contentType).body(new FileSystemResource(path));
+    }
+
+    private MediaType mediaType(String filename) {
+        String lower = filename.toLowerCase(java.util.Locale.ROOT);
+        if (lower.endsWith(".png")) {
+            return MediaType.IMAGE_PNG;
+        }
+        if (lower.endsWith(".webp")) {
+            return MediaType.parseMediaType("image/webp");
+        }
+        return MediaType.IMAGE_JPEG;
     }
 
     private void copyToRequest(VehicleView vehicle, VehicleRequest request) {

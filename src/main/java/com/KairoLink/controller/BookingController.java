@@ -1,6 +1,11 @@
 package com.KairoLink.controller;
 
 import com.KairoLink.service.BookingService;
+import com.KairoLink.dto.RoundTripDecisionForm;
+import com.KairoLink.service.RoundTripRequestService;
+import com.KairoLink.exception.BookingConflictException;
+import jakarta.validation.Valid;
+import org.springframework.validation.BindingResult;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,9 +17,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 public class BookingController {
 
     private final BookingService bookingService;
+    private final RoundTripRequestService roundTripRequestService;
 
-    public BookingController(BookingService bookingService) {
+    public BookingController(BookingService bookingService, RoundTripRequestService roundTripRequestService) {
         this.bookingService = bookingService;
+        this.roundTripRequestService = roundTripRequestService;
     }
 
     @GetMapping("/driver/bookings")
@@ -23,6 +30,7 @@ public class BookingController {
             @RequestParam(required = false) Long booking,
             org.springframework.ui.Model model) {
         model.addAttribute("bookings", bookingService.findDriverBookings(authentication.getName()));
+        model.addAttribute("roundTripRequests", roundTripRequestService.findForDriver(authentication.getName()));
         model.addAttribute("selectedBookingId", booking);
         return "driver/bookings";
     }
@@ -37,5 +45,35 @@ public class BookingController {
     public String reject(Authentication authentication, @PathVariable Long id) {
         bookingService.reject(authentication.getName(), id);
         return "redirect:/driver/bookings?rejected";
+    }
+
+    @PostMapping("/driver/round-trip-requests/{id}/accept")
+    public String acceptRoundTrip(
+            Authentication authentication,
+            @PathVariable Long id,
+            @Valid @org.springframework.web.bind.annotation.ModelAttribute("roundTripDecision")
+                    RoundTripDecisionForm form,
+            BindingResult bindingResult,
+            org.springframework.ui.Model model) {
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("bookings", bookingService.findDriverBookings(authentication.getName()));
+            model.addAttribute("roundTripRequests", roundTripRequestService.findForDriver(authentication.getName()));
+            return "driver/bookings";
+        }
+        try {
+            roundTripRequestService.accept(authentication.getName(), id, form);
+        } catch (BookingConflictException exception) {
+            model.addAttribute("roundTripError", exception.getMessage());
+            model.addAttribute("bookings", bookingService.findDriverBookings(authentication.getName()));
+            model.addAttribute("roundTripRequests", roundTripRequestService.findForDriver(authentication.getName()));
+            return "driver/bookings";
+        }
+        return "redirect:/driver/bookings?roundTripAccepted";
+    }
+
+    @PostMapping("/driver/round-trip-requests/{id}/reject")
+    public String rejectRoundTrip(Authentication authentication, @PathVariable Long id) {
+        roundTripRequestService.reject(authentication.getName(), id);
+        return "redirect:/driver/bookings?roundTripRejected";
     }
 }

@@ -3,28 +3,56 @@
       xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{fragments/header :: header}">
 </head>
-<body>
+<body class="vehicle-page">
 <div th:replace="~{fragments/navbar :: navbar}"></div>
 
-<main class="container">
-    <section class="hero">
+<main class="vehicle-shell">
+    <header class="vehicle-header">
+        <span class="vehicle-accent" aria-hidden="true"></span>
         <h1>Your vehicle</h1>
-        <p th:if="${param.updated}" role="status">Your vehicle was saved successfully.</p>
+        <p th:if="${param.updated}" class="vehicle-success" role="status">Your vehicle was saved successfully.</p>
+    </header>
+
+    <section class="vehicle-card" th:if="${vehicle != null}" aria-labelledby="vehicle-details-title">
+        <div class="vehicle-card-heading">
+            <div class="vehicle-icon" aria-hidden="true">▱</div>
+            <div>
+                <p class="vehicle-eyebrow">VEHICLE DETAILS</p>
+                <h2 id="vehicle-details-title" th:text="${vehicle.model}">Your vehicle model</h2>
+            </div>
+        </div>
+        <dl class="vehicle-details">
+            <div>
+                <dt>Model</dt>
+                <dd th:text="${vehicle.model}"></dd>
+            </div>
+            <div>
+                <dt>Number plate</dt>
+                <dd th:text="${vehicle.numberPlate}"></dd>
+            </div>
+            <div>
+                <dt>Seats</dt>
+                <dd th:text="${vehicle.seats}"></dd>
+            </div>
+            <div th:if="${vehicle.photoReference != null and vehicle.photoReference.startsWith('/vehicle/photos/')}" class="vehicle-photo-display">
+                <dt>Vehicle photo</dt>
+                <dd><img th:src="${vehicle.photoReference}" alt="Vehicle photo"></dd>
+            </div>
+            <div>
+                <dt>Photo reference</dt>
+                <dd th:text="${vehicle.photoReference != null and vehicle.photoReference.startsWith('/vehicle/photos/') ? 'Uploaded photo' : (vehicle.photoReference ?: 'Not provided')}"></dd>
+            </div>
+        </dl>
+        <div class="vehicle-actions">
+            <a class="ride-button ride-button--primary" th:href="@{/vehicle/edit}">Edit vehicle</a>
+        </div>
     </section>
 
-    <section th:if="${vehicle != null}">
-        <p><strong>Model:</strong> <span th:text="${vehicle.model}"></span></p>
-        <p><strong>Number plate:</strong> <span th:text="${vehicle.numberPlate}"></span></p>
-        <p><strong>Seats:</strong> <span th:text="${vehicle.seats}"></span></p>
-        <p><strong>Photo reference:</strong>
-            <span th:text="${vehicle.photoReference ?: 'Not provided'}"></span>
-        </p>
-        <p><a th:href="@{/vehicle/edit}">Edit vehicle</a></p>
-    </section>
-
-    <section th:if="${vehicle == null}">
-        <p>You have not added a vehicle yet.</p>
-        <p><a th:href="@{/vehicle/edit}">Add vehicle</a></p>
+    <section class="vehicle-card vehicle-empty-card" th:if="${vehicle == null}" aria-labelledby="vehicle-empty-title">
+        <div class="vehicle-empty-icon" aria-hidden="true">+</div>
+        <h2 id="vehicle-empty-title">No vehicle added yet</h2>
+        <p>Add your vehicle details before offering a ride.</p>
+        <a class="ride-button ride-button--primary" th:href="@{/vehicle/edit}">Add vehicle</a>
     </section>
 </main>
 

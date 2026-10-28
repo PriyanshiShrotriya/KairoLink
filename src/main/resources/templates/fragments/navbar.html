@@ -9,15 +9,17 @@
             <span>KairoLink</span>
         </a>
 
-        <input class="nav-menu-toggle" type="checkbox" id="nav-menu-toggle">
-        <label class="nav-menu-button" for="nav-menu-toggle">
+        <input class="nav-menu-toggle" type="checkbox" id="nav-menu-toggle"
+               aria-controls="primary-navigation" aria-expanded="false">
+        <label class="nav-menu-button" for="nav-menu-toggle"
+               aria-label="Toggle navigation menu">
             <span class="visually-hidden">Toggle navigation menu</span>
             <span aria-hidden="true"></span>
             <span aria-hidden="true"></span>
             <span aria-hidden="true"></span>
         </label>
 
-        <div class="nav-links">
+        <div class="nav-links" id="primary-navigation">
             <a th:href="@{/}">Home</a>
             <a th:href="@{/rider/search}">Find a Ride</a>
             <a th:href="@{/rides/new}">Offer a Ride</a>

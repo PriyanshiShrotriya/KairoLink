@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/header :: header}"></head>
+<body class="ride-page round-trip-page">
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+<main class="ride-shell">
+    <header class="ride-page-header">
+        <span class="ride-accent" aria-hidden="true"></span>
+        <p class="rider-eyebrow">ROUND-TRIP REQUEST</p>
+        <h1>Plan Your Return Journey</h1>
+        <p>Request a same-day return before or after your outbound ride departs. Your driver must approve the return departure.</p>
+    </header>
+
+    <section class="round-trip-summary ride-form-card" aria-labelledby="outbound-title">
+        <div>
+            <p class="round-trip-kicker">OUTBOUND JOURNEY</p>
+            <h2 id="outbound-title">
+                <span th:text="${booking.ride.source}">Home</span>
+                <span aria-hidden="true">→</span>
+                <span th:text="${booking.ride.destination}">NIET College</span>
+            </h2>
+            <p class="round-trip-meta">
+                <span th:text="${#temporals.format(booking.ride.departureTime, 'EEE, dd MMM yyyy · hh:mm a')}">Today</span>
+                <span>· Driver: <strong th:text="${booking.ride.driver.name}">Driver</strong></span>
+            </p>
+        </div>
+        <div class="round-trip-direction" aria-label="Return journey direction">
+            <span aria-hidden="true">↩</span>
+            <strong>RETURN</strong>
+        </div>
+    </section>
+
+    <div class="ride-notices" role="note">
+        <p>Choose a return departure later today. Your preferred return time is a request, not a confirmed departure time.</p>
+        <p class="ride-notice-error" th:if="${roundTripError}" th:text="${roundTripError}">Unable to submit request.</p>
+    </div>
+
+    <form class="ride-form" th:action="@{/rider/booking/{id}/round-trip(id=${booking.id})}"
+          th:object="${roundTripForm}" method="post" data-round-trip-form
+          th:attr="data-outbound-date=${returnDate}">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+        <section class="ride-form-card">
+            <h2>Return route</h2>
+            <div class="ride-route-fields">
+                <div class="ride-field">
+                    <label for="returnPickup">Pickup</label>
+                    <input id="returnPickup" type="text" th:field="*{returnPickup}" required maxlength="150">
+                    <p class="ride-field-error" th:if="${#fields.hasErrors('returnPickup')}" th:errors="*{returnPickup}"></p>
+                </div>
+                <div class="ride-field">
+                    <label for="returnDestination">Destination</label>
+                    <input id="returnDestination" type="text" th:field="*{returnDestination}" required maxlength="150">
+                    <p class="ride-field-error" th:if="${#fields.hasErrors('returnDestination')}" th:errors="*{returnDestination}"></p>
+                </div>
+            </div>
+        </section>
+        <section class="ride-form-card">
+            <h2>Return departure</h2>
+            <div class="ride-route-fields">
+                <div class="ride-field">
+                    <label for="requestedReturnDate">Date</label>
+                    <input id="requestedReturnDate" type="date" th:field="*{requestedReturnDate}"
+                           th:attr="min=${returnDate},max=${returnDate}" required>
+                    <p class="ride-field-error" th:if="${#fields.hasErrors('requestedReturnDate')}" th:errors="*{requestedReturnDate}"></p>
+                </div>
+                <div class="ride-field">
+                    <label for="requestedReturnTime">Preferred time</label>
+                    <input id="requestedReturnTime" type="time" th:field="*{requestedReturnTime}" required>
+                    <p class="ride-field-error" data-return-time-error th:if="${#fields.hasErrors('requestedReturnTime')}" th:errors="*{requestedReturnTime}"></p>
+                </div>
+            </div>
+            <p class="round-trip-form-hint" data-return-time-error hidden>
+                Choose a return time later than the current time.
+            </p>
+        </section>
+        <section class="ride-form-card">
+            <label class="ride-field" for="passengerMessage">Message to driver <span>(optional)</span></label>
+            <textarea id="passengerMessage" th:field="*{passengerMessage}" maxlength="1000" rows="4"></textarea>
+        </section>
+        <div class="ride-form-actions">
+            <button class="ride-button ride-button--primary" type="submit">Submit Return Request</button>
+            <a class="ride-button ride-button--secondary" th:href="@{/rider/bookings}">Back to My Bookings</a>
+        </div>
+    </form>
+</main>
+<div th:replace="~{fragments/footer :: footer}"></div>
+<script>
+    (() => {
+        const form = document.querySelector('[data-round-trip-form]');
+        if (!form) return;
+        const date = form.querySelector('#requestedReturnDate');
+        const time = form.querySelector('#requestedReturnTime');
+        const hint = form.querySelector('.round-trip-form-hint');
+        const outboundDate = form.dataset.outboundDate;
+        const validate = () => {
+            const now = new Date();
+            const today = [
+                now.getFullYear(),
+                String(now.getMonth() + 1).padStart(2, '0'),
+                String(now.getDate()).padStart(2, '0')
+            ].join('-');
+            const currentTime = now.toTimeString().slice(0, 5);
+            const invalid = date.value !== outboundDate || (date.value === today && time.value <= currentTime);
+            hint.hidden = !invalid;
+            time.setCustomValidity(invalid ? 'Choose a future return departure on the outbound date.' : '');
+        };
+        date.addEventListener('change', validate);
+        time.addEventListener('change', validate);
+        form.addEventListener('submit', event => {
+            validate();
+            if (!form.checkValidity()) event.preventDefault();
+        });
+        validate();
+    })();
+</script>
+</body>
+</html>

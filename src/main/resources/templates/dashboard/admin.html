@@ -3,11 +3,13 @@
       xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{fragments/header :: header}">
 </head>
-<body>
+<body class="admin-page">
 <div th:replace="~{fragments/navbar :: navbar}"></div>
 
-<main class="container">
-    <section class="hero">
+<main class="admin-shell">
+    <section class="admin-header">
+        <span class="admin-accent" aria-hidden="true"></span>
+        <p class="admin-eyebrow">KAIROLINK ADMINISTRATION</p>
         <h1>Admin dashboard</h1>
         <p>Your space for monitoring the KairoLink platform.</p>
     </section>

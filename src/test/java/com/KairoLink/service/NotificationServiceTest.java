@@ -2,11 +2,15 @@ package com.KairoLink.service;
 
 import com.KairoLink.entity.Notification;
 import com.KairoLink.entity.NotificationType;
+import com.KairoLink.entity.Ride;
+import com.KairoLink.entity.RoundTripRequest;
+import com.KairoLink.entity.RoundTripRequestStatus;
 import com.KairoLink.entity.User;
 import com.KairoLink.exception.NotificationAccessDeniedException;
 import com.KairoLink.exception.NotificationNotFoundException;
 import com.KairoLink.exception.UserNotFoundException;
 import com.KairoLink.repository.NotificationRepository;
+import com.KairoLink.repository.RoundTripRequestRepository;
 import com.KairoLink.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -27,14 +31,17 @@ import static org.mockito.Mockito.when;
 class NotificationServiceTest {
 
     private NotificationRepository notificationRepository;
+    private RoundTripRequestRepository roundTripRequestRepository;
     private UserRepository userRepository;
     private NotificationService notificationService;
 
     @BeforeEach
     void setUp() {
         notificationRepository = mock(NotificationRepository.class);
+        roundTripRequestRepository = mock(RoundTripRequestRepository.class);
         userRepository = mock(UserRepository.class);
-        notificationService = new NotificationService(notificationRepository, userRepository);
+        notificationService = new NotificationService(
+                notificationRepository, roundTripRequestRepository, userRepository);
     }
 
     @Test
@@ -73,6 +80,32 @@ class NotificationServiceTest {
         assertEquals(2, notificationService.getNotifications("receiver@example.com").size());
         assertEquals(List.of(unread), notificationService.getUnreadNotifications("receiver@example.com"));
         assertEquals(1L, notificationService.getUnreadCount("receiver@example.com"));
+    }
+
+    @Test
+    void formatsLegacyAcceptedRoundTripMessageFromConfirmedReturnTime() {
+        User receiver = user(1L, "receiver@example.com");
+        Notification notification = notification(10L, receiver, false);
+        notification.setTitle("Round-trip accepted");
+        notification.setBookingId(7L);
+        notification.setMessage("Your return journey is confirmed for 2026-10-29T03:40");
+
+        Ride confirmedRide = new Ride();
+        confirmedRide.setDepartureTime(java.time.LocalDateTime.of(2026, 10, 29, 3, 40));
+        RoundTripRequest request = new RoundTripRequest();
+        request.setConfirmedReturnRide(confirmedRide);
+
+        when(userRepository.findByEmail("receiver@example.com")).thenReturn(Optional.of(receiver));
+        when(notificationRepository.findByReceiverIdOrderByCreatedAtDesc(1L))
+                .thenReturn(List.of(notification));
+        when(roundTripRequestRepository.findByOutboundBookingIdAndStatus(
+                7L, RoundTripRequestStatus.ACCEPTED)).thenReturn(Optional.of(request));
+
+        List<Notification> notifications = notificationService.getNotifications("receiver@example.com");
+
+        assertEquals(
+                "Your return journey has been accepted for 29 October 2026 at 3:40 AM.",
+                notifications.get(0).getMessage());
     }
 
     @Test
