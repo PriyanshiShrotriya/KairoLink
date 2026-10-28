@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/header :: header}">
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<main class="container">
+    <section class="hero">
+        <h1>Ride Monitoring</h1>
+        <p>View all rides on the platform.</p>
+    </section>
+
+    <section class="monitoring-table-section">
+        <div th:if="${rides.isEmpty()}" class="empty-state">
+            <p>No rides found.</p>
+        </div>
+
+        <table class="monitoring-table" th:unless="${rides.isEmpty()}">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Driver</th>
+                    <th>Origin</th>
+                    <th>Destination</th>
+                    <th>Departure Time</th>
+                    <th>Available Seats</th>
+                    <th>Price</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="ride : ${rides}">
+                    <td th:text="${ride.id}"></td>
+                    <td th:text="${ride.driver.name}"></td>
+                    <td th:text="${ride.source}"></td>
+                    <td th:text="${ride.destination}"></td>
+                    <td th:text="${#temporals.format(ride.departureTime, 'yyyy-MM-dd HH:mm')}"></td>
+                    <td th:text="${ride.seats}"></td>
+                    <td th:text="'$' + ${#numbers.formatDecimal(ride.price, 1, 2)}"></td>
+                    <td>
+                        <span class="status-badge" th:classappend="${'status-' + ride.status.name().toLowerCase()}" th:text="${ride.status.name()}"></span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+</main>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+<style>
+    .empty-state {
+        padding: 32px 16px;
+        text-align: center;
+        color: #666;
+        background-color: #f9f9f9;
+        border-radius: 4px;
+        margin: 16px 0;
+    }
+
+    .monitoring-table-section {
+        margin: 32px 0;
+        overflow-x: auto;
+    }
+
+    .monitoring-table {
+        width: 100%;
+        border-collapse: collapse;
+        border: 1px solid #e0e0e0;
+        background-color: #fff;
+    }
+
+    .monitoring-table thead {
+        background-color: #f5f5f5;
+    }
+
+    .monitoring-table th,
+    .monitoring-table td {
+        padding: 12px 16px;
+        text-align: left;
+        border-bottom: 1px solid #e0e0e0;
+    }
+
+    .monitoring-table th {
+        font-weight: 600;
+        color: #333;
+    }
+
+    .monitoring-table tbody tr:hover {
+        background-color: #f9f9f9;
+    }
+
+    .status-badge {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .status-created {
+        background-color: #e7f3ff;
+        color: #004085;
+    }
+
+    .status-active {
+        background-color: #d4edda;
+        color: #155724;
+    }
+
+    .status-ongoing {
+        background-color: #cfe2ff;
+        color: #084298;
+    }
+
+    .status-completed {
+        background-color: #d1ecf1;
+        color: #0c5460;
+    }
+
+    .status-cancelled {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+</style>
+</body>
+</html>

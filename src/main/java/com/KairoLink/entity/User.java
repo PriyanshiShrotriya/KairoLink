@@ -68,6 +68,10 @@ public class User {
 
     private String profilePhotoReference;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private UserStatus status = UserStatus.ACTIVE;
+
     @Column(nullable = false)
     private boolean enabled = true;
 
