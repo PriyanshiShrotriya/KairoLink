@@ -19,6 +19,7 @@ public interface RoundTripRequestRepository extends JpaRepository<RoundTripReque
         join fetch request.outboundBooking booking
         join fetch booking.ride ride
         join fetch ride.driver
+        left join fetch request.confirmedReturnRide
         where booking.rider.id = :riderId
         order by request.createdAt desc
         """)
@@ -29,6 +30,7 @@ public interface RoundTripRequestRepository extends JpaRepository<RoundTripReque
         join fetch request.outboundBooking booking
         join fetch booking.rider
         join fetch booking.ride ride
+        left join fetch request.confirmedReturnRide
         where ride.driver.id = :driverId
         order by request.createdAt desc
         """)
@@ -49,4 +51,14 @@ public interface RoundTripRequestRepository extends JpaRepository<RoundTripReque
     Optional<RoundTripRequest> findForUpdate(@Param("id") Long id);
 
     Optional<RoundTripRequest> findByIdAndOutboundBookingRiderId(Long id, Long riderId);
+
+    @Query("""
+        select request from RoundTripRequest request
+        left join fetch request.confirmedReturnRide
+        where request.outboundBooking.id = :bookingId
+          and request.status = :status
+        """)
+    Optional<RoundTripRequest> findByOutboundBookingIdAndStatus(
+            @Param("bookingId") Long bookingId,
+            @Param("status") RoundTripRequestStatus status);
 }

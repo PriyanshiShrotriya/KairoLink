@@ -32,6 +32,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.when;
 
 class RoundTripRequestServiceTest {
@@ -72,7 +73,7 @@ class RoundTripRequestServiceTest {
                 "driver@example.com",
                 com.KairoLink.entity.NotificationType.GENERAL,
                 "Round-trip request",
-                "User requested a return journey",
+                "User requested a return journey. It is awaiting your response.",
                 7L);
     }
 
@@ -103,6 +104,57 @@ class RoundTripRequestServiceTest {
     }
 
     @Test
+    void allowsRequestAfterOutboundDepartureOnTheSameDay() {
+        User rider = user(1L, "rider@example.com", Role.RIDER);
+        Booking outbound = booking(rider, BookingStatus.CONFIRMED);
+        outbound.getRide().setDepartureTime(LocalDate.now().atStartOfDay());
+        when(userRepository.findByEmail(rider.getEmail())).thenReturn(Optional.of(rider));
+        when(bookingRepository.findById(7L)).thenReturn(Optional.of(outbound));
+        when(requestRepository.existsByOutboundBookingIdAndStatusIn(any(), any())).thenReturn(false);
+        when(requestRepository.save(any(RoundTripRequest.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        assertEquals(RoundTripRequestStatus.PENDING,
+                service.create(rider.getEmail(), 7L, form()).getStatus());
+    }
+
+    @Test
+    void rejectsRequestOnADifferentCalendarDate() {
+        User rider = user(1L, "rider@example.com", Role.RIDER);
+        Booking outbound = booking(rider, BookingStatus.CONFIRMED);
+        RoundTripRequestForm request = form();
+        request.setRequestedReturnDate(LocalDate.now().plusDays(1));
+        when(userRepository.findByEmail(rider.getEmail())).thenReturn(Optional.of(rider));
+        when(bookingRepository.findById(7L)).thenReturn(Optional.of(outbound));
+
+        assertThrows(BookingConflictException.class,
+                () -> service.create(rider.getEmail(), 7L, request));
+    }
+
+    @Test
+    void rejectsReturnDepartureInThePast() {
+        User rider = user(1L, "rider@example.com", Role.RIDER);
+        Booking outbound = booking(rider, BookingStatus.CONFIRMED);
+        RoundTripRequestForm request = form();
+        request.setRequestedReturnTime(LocalTime.MIDNIGHT);
+        when(userRepository.findByEmail(rider.getEmail())).thenReturn(Optional.of(rider));
+        when(bookingRepository.findById(7L)).thenReturn(Optional.of(outbound));
+
+        assertThrows(BookingConflictException.class,
+                () -> service.create(rider.getEmail(), 7L, request));
+    }
+
+    @Test
+    void rejectsUnconfirmedOutboundBooking() {
+        User rider = user(1L, "rider@example.com", Role.RIDER);
+        Booking outbound = booking(rider, BookingStatus.PENDING);
+        when(userRepository.findByEmail(rider.getEmail())).thenReturn(Optional.of(rider));
+        when(bookingRepository.findById(7L)).thenReturn(Optional.of(outbound));
+
+        assertThrows(BookingConflictException.class,
+                () -> service.create(rider.getEmail(), 7L, form()));
+    }
+
+    @Test
     void acceptsRequestAndCreatesLinkedReturnBooking() {
         User driver = user(2L, "driver@example.com", Role.DRIVER);
         User rider = user(1L, "rider@example.com", Role.RIDER);
@@ -121,11 +173,20 @@ class RoundTripRequestServiceTest {
 
         RoundTripRequest accepted = service.accept(
                 driver.getEmail(), 11L,
-                new RoundTripDecisionForm(LocalDate.now().plusDays(2), LocalTime.of(18, 0)));
+                futureReturn());
 
         assertEquals(RoundTripRequestStatus.ACCEPTED, accepted.getStatus());
         assertEquals(19L, accepted.getConfirmedReturnRide().getId());
         verify(bookingRepository).save(any(Booking.class));
+        verify(notificationService).createNotification(
+                "rider@example.com",
+                com.KairoLink.entity.NotificationType.GENERAL,
+                "Round-trip accepted",
+                "Your return journey has been accepted for "
+                        + java.time.format.DateTimeFormatter
+                        .ofPattern("d MMMM yyyy 'at' h:mm a")
+                        .format(accepted.getConfirmedReturnRide().getDepartureTime()) + ".",
+                7L);
     }
 
     @Test
@@ -138,17 +199,56 @@ class RoundTripRequestServiceTest {
 
         assertThrows(BookingConflictException.class,
                 () -> service.accept(driver.getEmail(), 11L,
-                        new RoundTripDecisionForm(LocalDate.now().plusDays(2), LocalTime.of(18, 0))));
+                        futureReturn()));
+    }
+
+    @Test
+    void rejectsPendingRequestForAnotherDriver() {
+        User actualDriver = user(3L, "other-driver@example.com", Role.DRIVER);
+        User requestDriver = user(2L, "driver@example.com", Role.DRIVER);
+        RoundTripRequest request = request(user(1L, "rider@example.com", Role.RIDER), requestDriver);
+        when(userRepository.findByEmail(actualDriver.getEmail())).thenReturn(Optional.of(actualDriver));
+        when(requestRepository.findForUpdate(11L)).thenReturn(Optional.of(request));
+
+        assertThrows(RoundTripRequestNotFoundException.class,
+                () -> service.accept(actualDriver.getEmail(), 11L, futureReturn()));
+        verify(rideRepository, never()).save(any(Ride.class));
+    }
+
+    @Test
+    void rejectsPendingRequestAndNotifiesRider() {
+        User driver = user(2L, "driver@example.com", Role.DRIVER);
+        User rider = user(1L, "rider@example.com", Role.RIDER);
+        RoundTripRequest request = request(rider, driver);
+        when(userRepository.findByEmail(driver.getEmail())).thenReturn(Optional.of(driver));
+        when(requestRepository.findForUpdate(11L)).thenReturn(Optional.of(request));
+        when(requestRepository.save(request)).thenReturn(request);
+
+        RoundTripRequest rejected = service.reject(driver.getEmail(), 11L);
+
+        assertEquals(RoundTripRequestStatus.REJECTED, rejected.getStatus());
+        verify(notificationService).createNotification(
+                "rider@example.com",
+                com.KairoLink.entity.NotificationType.GENERAL,
+                "Round-trip rejected",
+                "Your driver has declined your return journey request.",
+                7L);
     }
 
     private RoundTripRequestForm form() {
         RoundTripRequestForm form = new RoundTripRequestForm();
         form.setReturnPickup("Office");
         form.setReturnDestination("Campus");
-        form.setRequestedReturnDate(LocalDate.now().plusDays(1));
-        form.setRequestedReturnTime(LocalTime.of(18, 0));
+        LocalDateTime requested = LocalDateTime.now().plusMinutes(30);
+        form.setRequestedReturnDate(requested.toLocalDate());
+        form.setRequestedReturnTime(requested.toLocalTime());
         form.setPassengerMessage("Please let me know when approved");
         return form;
+    }
+
+    private RoundTripDecisionForm futureReturn() {
+        LocalDateTime departure = LocalDateTime.now().plusMinutes(30);
+        return new RoundTripDecisionForm(departure.toLocalDate(), departure.toLocalTime());
     }
 
     private RoundTripRequest request(User rider, User driver) {
@@ -157,7 +257,7 @@ class RoundTripRequestServiceTest {
         request.setStatus(RoundTripRequestStatus.PENDING);
         request.setOutboundBooking(booking(rider, BookingStatus.CONFIRMED));
         request.getOutboundBooking().getRide().setDriver(driver);
-        request.setRequestedReturnDate(LocalDate.now().plusDays(1));
+        request.setRequestedReturnDate(LocalDate.now());
         request.setRequestedReturnTime(LocalTime.of(18, 0));
         request.setReturnPickup("Office");
         request.setReturnDestination("Campus");
@@ -170,7 +270,7 @@ class RoundTripRequestServiceTest {
         ride.setDriver(user(2L, "driver@example.com", Role.DRIVER));
         ride.setSource("Campus");
         ride.setDestination("Office");
-        ride.setDepartureTime(LocalDateTime.now().plusDays(1));
+        ride.setDepartureTime(LocalDateTime.now().plusHours(1));
         ride.setSeats(2);
         ride.setPrice(new BigDecimal("25.00"));
         ride.setStatus(RideStatus.ACTIVE);

@@ -3,51 +3,80 @@
       xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{fragments/header :: header}">
 </head>
-<body>
+<body class="vehicle-page">
 <div th:replace="~{fragments/navbar :: navbar}"></div>
 
-<main class="container">
-    <section class="hero">
+<main class="vehicle-shell">
+    <header class="vehicle-header">
+        <a class="vehicle-back-link" th:href="@{/vehicle}">← Back to vehicle</a>
+        <span class="vehicle-accent" aria-hidden="true"></span>
         <h1>Manage your vehicle</h1>
-    </section>
+        <p>Keep the details of the vehicle you share up to date.</p>
+    </header>
 
-    <form th:action="@{/vehicle}"
+    <form class="vehicle-card vehicle-form" th:action="@{/vehicle}"
           th:object="${vehicleRequest}"
-          method="post">
+          method="post" enctype="multipart/form-data" data-vehicle-photo-form>
         <input type="hidden"
                th:name="${_csrf.parameterName}"
                th:value="${_csrf.token}">
 
-        <div>
+        <div class="vehicle-field">
             <label for="model">Model</label>
             <input id="model" type="text" th:field="*{model}" maxlength="100" required>
-            <p th:if="${#fields.hasErrors('model')}" th:errors="*{model}"></p>
+            <p class="vehicle-error" th:if="${#fields.hasErrors('model')}" th:errors="*{model}"></p>
         </div>
 
-        <div>
+        <div class="vehicle-field">
             <label for="numberPlate">Number plate</label>
             <input id="numberPlate" type="text" th:field="*{numberPlate}" maxlength="30" required>
-            <p th:if="${#fields.hasErrors('numberPlate')}" th:errors="*{numberPlate}"></p>
+            <p class="vehicle-error" th:if="${#fields.hasErrors('numberPlate')}" th:errors="*{numberPlate}"></p>
         </div>
 
-        <div>
+        <div class="vehicle-field">
             <label for="seats">Seats</label>
             <input id="seats" type="number" th:field="*{seats}" min="1" required>
-            <p th:if="${#fields.hasErrors('seats')}" th:errors="*{seats}"></p>
+            <p class="vehicle-error" th:if="${#fields.hasErrors('seats')}" th:errors="*{seats}"></p>
         </div>
 
-        <div>
-            <label for="photoReference">Photo reference</label>
-            <input id="photoReference" type="text" th:field="*{photoReference}" maxlength="255">
-            <p th:if="${#fields.hasErrors('photoReference')}" th:errors="*{photoReference}"></p>
+        <div class="vehicle-field vehicle-photo-field">
+            <label for="vehiclePhoto">Vehicle Photo</label>
+            <p class="vehicle-help">JPG, JPEG, PNG, or WebP up to 5 MB.</p>
+            <input id="vehiclePhoto" type="file" th:field="*{vehiclePhoto}"
+                   accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+                   data-vehicle-photo-input>
+            <input type="hidden" th:field="*{photoReference}">
+            <input type="hidden" th:field="*{removePhoto}" data-remove-photo>
+            <div class="vehicle-photo-preview" data-vehicle-photo-preview
+                 th:classappend="${vehicleRequest.photoReference != null and !#strings.isEmpty(vehicleRequest.photoReference)} ? ' vehicle-photo-preview--has-image' : ''">
+                <img data-vehicle-photo-image alt="Selected vehicle photo"
+                     th:if="${vehicleRequest.photoReference != null and !#strings.isEmpty(vehicleRequest.photoReference)}"
+                     th:src="${vehicleRequest.photoReference}">
+                <p data-vehicle-photo-empty
+                   th:unless="${vehicleRequest.photoReference != null and !#strings.isEmpty(vehicleRequest.photoReference)}">
+                    No vehicle photo selected yet.
+                </p>
+            </div>
+            <div class="vehicle-photo-actions">
+                <button class="ride-button ride-button--secondary" type="button"
+                        data-vehicle-photo-remove
+                        th:disabled="${vehicleRequest.photoReference == null or #strings.isEmpty(vehicleRequest.photoReference)}">
+                    Remove photo
+                </button>
+            </div>
+            <p class="vehicle-error" data-vehicle-photo-error role="alert"></p>
+            <p class="vehicle-error" th:if="${#fields.hasGlobalErrors()}" th:errors="*{global}"></p>
+            <p class="vehicle-error" th:if="${vehiclePhotoError}" th:text="${vehiclePhotoError}" role="alert"></p>
         </div>
 
-        <button type="submit">Save vehicle</button>
+        <div class="vehicle-form-actions">
+            <a class="ride-button ride-button--secondary" th:href="@{/vehicle}">Cancel</a>
+            <button class="ride-button ride-button--primary" type="submit">Save vehicle</button>
+        </div>
     </form>
-
-    <p><a th:href="@{/vehicle}">Cancel</a></p>
 </main>
 
 <div th:replace="~{fragments/footer :: footer}"></div>
+<script th:src="@{/js/vehicle-photo.js}"></script>
 </body>
 </html>

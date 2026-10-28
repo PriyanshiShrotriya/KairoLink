@@ -19,10 +19,14 @@ import com.KairoLink.repository.RideRepository;
 import com.KairoLink.repository.RoundTripRequestRepository;
 import com.KairoLink.repository.UserRepository;
 import jakarta.transaction.Transactional;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.Clock;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Locale;
@@ -30,23 +34,40 @@ import java.util.Locale;
 @Service
 public class RoundTripRequestService {
 
+    private static final DateTimeFormatter NOTIFICATION_DATE_TIME_FORMAT =
+            DateTimeFormatter.ofPattern("d MMMM yyyy 'at' h:mm a");
+
     private final UserRepository userRepository;
     private final BookingRepository bookingRepository;
     private final RideRepository rideRepository;
     private final RoundTripRequestRepository requestRepository;
     private final NotificationService notificationService;
+    private final Clock clock;
 
+    @Autowired
     public RoundTripRequestService(
             UserRepository userRepository,
             BookingRepository bookingRepository,
             RideRepository rideRepository,
             RoundTripRequestRepository requestRepository,
             NotificationService notificationService) {
+        this(userRepository, bookingRepository, rideRepository, requestRepository,
+                notificationService, Clock.systemDefaultZone());
+    }
+
+    RoundTripRequestService(
+            UserRepository userRepository,
+            BookingRepository bookingRepository,
+            RideRepository rideRepository,
+            RoundTripRequestRepository requestRepository,
+            NotificationService notificationService,
+            Clock clock) {
         this.userRepository = userRepository;
         this.bookingRepository = bookingRepository;
         this.rideRepository = rideRepository;
         this.requestRepository = requestRepository;
         this.notificationService = notificationService;
+        this.clock = clock;
     }
 
     @Transactional
@@ -58,6 +79,8 @@ public class RoundTripRequestService {
             throw new RoundTripRequestNotFoundException("Outbound booking was not found");
         }
         validateEligibleBooking(booking);
+        validateReturnForm(form);
+        validateSameDayReturn(booking, form.getRequestedReturnDate());
         LocalDateTime requestedAt = LocalDateTime.of(
                 form.getRequestedReturnDate(), form.getRequestedReturnTime());
         validateReturnTime(requestedAt);
@@ -79,7 +102,7 @@ public class RoundTripRequestService {
                 booking.getRide().getDriver().getEmail(),
                 NotificationType.GENERAL,
                 "Round-trip request",
-                rider.getName() + " requested a return journey",
+                rider.getName() + " requested a return journey. It is awaiting your response.",
                 booking.getId());
         return saved;
     }
@@ -98,6 +121,24 @@ public class RoundTripRequestService {
                 .orElseThrow(() -> new RoundTripRequestNotFoundException("Round-trip request was not found"));
     }
 
+    public boolean canRequest(String email, Booking booking) {
+        if (booking == null) {
+            return false;
+        }
+        try {
+            User rider = findUser(email, Role.RIDER);
+            if (booking.getRider() == null || !rider.getId().equals(booking.getRider().getId())) {
+                return false;
+            }
+            validateEligibleBooking(booking);
+            return !requestRepository.existsByOutboundBookingIdAndStatusIn(
+                    booking.getId(), EnumSet.of(
+                            RoundTripRequestStatus.PENDING, RoundTripRequestStatus.ACCEPTED));
+        } catch (BookingConflictException | UserNotFoundException exception) {
+            return false;
+        }
+    }
+
     @Transactional
     public RoundTripRequest accept(String email, Long requestId, RoundTripDecisionForm form) {
         User driver = findUser(email, Role.DRIVER);
@@ -113,7 +154,10 @@ public class RoundTripRequestService {
                 form.getConfirmedReturnDate(), form.getConfirmedReturnTime());
         validateReturnTime(departure);
         Booking outbound = request.getOutboundBooking();
-        validateEligibleBooking(outbound);
+        if (outbound.getStatus() != BookingStatus.CONFIRMED) {
+            throw new BookingConflictException("The outbound booking is no longer confirmed");
+        }
+        validateSameDayReturn(outbound, form.getConfirmedReturnDate());
         if (rideRepository.existsByDriverIdAndDepartureTimeAndStatusIn(
                 driver.getId(), departure, EnumSet.of(RideStatus.CREATED, RideStatus.ACTIVE, RideStatus.ONGOING))) {
             throw new BookingConflictException("The confirmed return time conflicts with another ride");
@@ -147,7 +191,7 @@ public class RoundTripRequestService {
                 outbound.getRider().getEmail(),
                 NotificationType.GENERAL,
                 "Round-trip accepted",
-                "Your return journey is confirmed for " + departure,
+                acceptedMessage(departure),
                 outbound.getId());
         return saved;
     }
@@ -170,7 +214,7 @@ public class RoundTripRequestService {
                 request.getOutboundBooking().getRider().getEmail(),
                 NotificationType.GENERAL,
                 "Round-trip rejected",
-                "Your driver declined the return journey request",
+                "Your driver has declined your return journey request.",
                 request.getOutboundBooking().getId());
         return saved;
     }
@@ -189,15 +233,47 @@ public class RoundTripRequestService {
         if (booking.getStatus() != BookingStatus.CONFIRMED) {
             throw new BookingConflictException("A confirmed outbound booking is required");
         }
-        if (booking.getRide().getDepartureTime() == null
-                || !booking.getRide().getDepartureTime().isAfter(LocalDateTime.now())) {
-            throw new BookingConflictException("The outbound ride is no longer eligible");
+
+        if (booking.getRide() == null || booking.getRide().getDepartureTime() == null) {
+            throw new BookingConflictException("The outbound ride has no departure time");
+        }
+        if (!booking.getRide().getDepartureTime().toLocalDate()
+                .equals(LocalDate.now(clock))) {
+            throw new BookingConflictException(
+                    "A return request can only be made on the outbound ride's calendar date");
         }
     }
 
+    private String acceptedMessage(LocalDateTime departure) {
+        if (departure == null) {
+            return "Your return journey has been accepted.";
+        }
+        return "Your return journey has been accepted for "
+                + NOTIFICATION_DATE_TIME_FORMAT.format(departure) + ".";
+    }
+
     private void validateReturnTime(LocalDateTime dateTime) {
-        if (dateTime == null || !dateTime.isAfter(LocalDateTime.now())) {
+        if (dateTime == null || !dateTime.isAfter(LocalDateTime.now(clock))) {
             throw new BookingConflictException("The return departure must be in the future");
+        }
+    }
+
+    private void validateSameDayReturn(Booking booking, LocalDate returnDate) {
+        if (returnDate == null || booking.getRide() == null
+                || !returnDate.equals(booking.getRide().getDepartureTime().toLocalDate())) {
+            throw new BookingConflictException(
+                    "The return journey must be scheduled on the outbound ride's calendar date");
+        }
+    }
+
+    private void validateReturnForm(RoundTripRequestForm form) {
+        if (form == null
+                || form.getRequestedReturnDate() == null
+                || form.getRequestedReturnTime() == null) {
+            throw new BookingConflictException("A return date and time are required");
+        }
+        if (form.getReturnPickup() == null || form.getReturnDestination() == null) {
+            throw new BookingConflictException("Return pickup and destination are required");
         }
     }
 

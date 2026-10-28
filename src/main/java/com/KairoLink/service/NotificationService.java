@@ -7,23 +7,32 @@ import com.KairoLink.exception.NotificationAccessDeniedException;
 import com.KairoLink.exception.NotificationNotFoundException;
 import com.KairoLink.exception.UserNotFoundException;
 import com.KairoLink.repository.NotificationRepository;
+import com.KairoLink.repository.RoundTripRequestRepository;
 import com.KairoLink.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Locale;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 @Service
 public class NotificationService {
 
+    private static final DateTimeFormatter ROUND_TRIP_DATE_TIME_FORMAT =
+            DateTimeFormatter.ofPattern("d MMMM yyyy 'at' h:mm a", Locale.ENGLISH);
+
     private final NotificationRepository notificationRepository;
+    private final RoundTripRequestRepository roundTripRequestRepository;
     private final UserRepository userRepository;
 
     public NotificationService(
             NotificationRepository notificationRepository,
+            RoundTripRequestRepository roundTripRequestRepository,
             UserRepository userRepository) {
         this.notificationRepository = notificationRepository;
+        this.roundTripRequestRepository = roundTripRequestRepository;
         this.userRepository = userRepository;
     }
 
@@ -58,7 +67,10 @@ public class NotificationService {
 
     public List<Notification> getNotifications(String receiverEmail) {
         User receiver = findUser(receiverEmail);
-        return notificationRepository.findByReceiverIdOrderByCreatedAtDesc(receiver.getId());
+        return notificationRepository.findByReceiverIdOrderByCreatedAtDesc(receiver.getId())
+                .stream()
+                .peek(this::formatLegacyRoundTripMessage)
+                .toList();
     }
 
     public List<Notification> getUnreadNotifications(String receiverEmail) {
@@ -135,5 +147,31 @@ public class NotificationService {
         if (message == null || message.trim().isEmpty()) {
             throw new IllegalArgumentException("Notification message is required");
         }
+    }
+
+    private void formatLegacyRoundTripMessage(Notification notification) {
+        if (notification == null
+                || notification.getBookingId() == null
+                || !"Round-trip accepted".equals(notification.getTitle())
+                || notification.getMessage() == null
+                || !notification.getMessage().contains("T")) {
+            return;
+        }
+
+        roundTripRequestRepository.findByOutboundBookingIdAndStatus(
+                        notification.getBookingId(),
+                        com.KairoLink.entity.RoundTripRequestStatus.ACCEPTED)
+                .map(com.KairoLink.entity.RoundTripRequest::getConfirmedReturnRide)
+                .map(com.KairoLink.entity.Ride::getDepartureTime)
+                .map(this::acceptedRoundTripMessage)
+                .ifPresent(notification::setMessage);
+    }
+
+    private String acceptedRoundTripMessage(LocalDateTime departure) {
+        if (departure == null) {
+            return "Your return journey has been accepted.";
+        }
+        return "Your return journey has been accepted for "
+                + ROUND_TRIP_DATE_TIME_FORMAT.format(departure) + ".";
     }
 }

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{fragments/header :: header}"></head>
-<body class="ride-page rider-page">
+<body class="ride-page rider-page rider-details-page">
 <div th:replace="~{fragments/navbar :: navbar}"></div>
 
 <main class="ride-shell rider-details-shell">
@@ -45,7 +45,11 @@
                     <div>
                         <h3 th:text="${vehicle.model}">Vehicle model</h3>
                         <p><span th:text="${vehicle.numberPlate}">Vehicle number plate</span> · <span th:text="${vehicle.seats}">0</span> seats</p>
-                        <p th:if="${vehicle.photoReference != null and !#strings.isEmpty(vehicle.photoReference)}" th:text="${vehicle.photoReference}">Vehicle photo reference</p>
+                        <img class="rider-vehicle-photo"
+                             th:if="${vehicle.photoReference != null and vehicle.photoReference.startsWith('/vehicle/photos/')}"
+                             th:src="${vehicle.photoReference}" alt="Driver vehicle photo">
+                        <p th:if="${vehicle.photoReference != null and !#strings.isEmpty(vehicle.photoReference) and !vehicle.photoReference.startsWith('/vehicle/photos/')}"
+                           th:text="${vehicle.photoReference}">Vehicle photo reference</p>
                     </div>
                 </div>
                 <div class="rider-vehicle-placeholder" th:unless="${vehicle != null}">

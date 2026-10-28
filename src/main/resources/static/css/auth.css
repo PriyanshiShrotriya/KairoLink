@@ -1,14 +1,14 @@
 :root {
-    --auth-indigo: #1D2B22;
-    --auth-indigo-light: #526044;
-    --auth-amber: #B76045;
-    --auth-amber-dark: #984B37;
-    --auth-teal: #586044;
-    --auth-coral: #9B5147;
-    --auth-cloud: #F6F0E5;
+    --auth-indigo: #1B2A4A;
+    --auth-indigo-light: #2E4272;
+    --auth-amber: #F2A93B;
+    --auth-amber-dark: #D48F22;
+    --auth-teal: #2E8B74;
+    --auth-coral: #E15554;
+    --auth-cloud: #F5EFE3;
     --auth-surface: #FBF8F1;
-    --auth-charcoal: #263126;
-    --auth-slate: #6F6B59;
+    --auth-charcoal: #1D3025;
+    --auth-slate: #686957;
     --auth-border: #DED4C0;
     --auth-display: 'Iowan Old Style', 'Baskerville', 'Georgia', serif;
     --auth-body: 'Inter', 'Segoe UI', system-ui, sans-serif;

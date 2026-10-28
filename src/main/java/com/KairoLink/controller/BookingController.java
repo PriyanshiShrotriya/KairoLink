@@ -3,6 +3,7 @@ package com.KairoLink.controller;
 import com.KairoLink.service.BookingService;
 import com.KairoLink.dto.RoundTripDecisionForm;
 import com.KairoLink.service.RoundTripRequestService;
+import com.KairoLink.exception.BookingConflictException;
 import jakarta.validation.Valid;
 import org.springframework.validation.BindingResult;
 import org.springframework.security.core.Authentication;
@@ -59,7 +60,14 @@ public class BookingController {
             model.addAttribute("roundTripRequests", roundTripRequestService.findForDriver(authentication.getName()));
             return "driver/bookings";
         }
-        roundTripRequestService.accept(authentication.getName(), id, form);
+        try {
+            roundTripRequestService.accept(authentication.getName(), id, form);
+        } catch (BookingConflictException exception) {
+            model.addAttribute("roundTripError", exception.getMessage());
+            model.addAttribute("bookings", bookingService.findDriverBookings(authentication.getName()));
+            model.addAttribute("roundTripRequests", roundTripRequestService.findForDriver(authentication.getName()));
+            return "driver/bookings";
+        }
         return "redirect:/driver/bookings?roundTripAccepted";
     }
 
