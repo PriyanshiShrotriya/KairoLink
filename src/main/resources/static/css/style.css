@@ -1354,6 +1354,23 @@ footer {
     width: 100%;
 }
 
+.ride-card-actions--manage {
+    flex-wrap: wrap;
+}
+
+.ride-card-actions--manage form {
+    flex: 0 1 auto;
+}
+
+.ride-card-actions--manage .ride-button {
+    width: auto;
+    white-space: nowrap;
+}
+
+.ride-card-actions--ongoing {
+    flex-direction: column;
+}
+
 .ride-button--danger {
     width: 100%;
     border: 1px solid rgba(225, 85, 84, .35);

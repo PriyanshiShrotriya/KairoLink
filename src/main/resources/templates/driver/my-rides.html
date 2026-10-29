@@ -64,7 +64,7 @@
                 <span><b th:text="${ride.price}">0.00</b> per seat</span>
             </div>
 
-            <div class="ride-card-actions"
+            <div class="ride-card-actions ride-card-actions--manage"
                  th:if="${ride.status.name() == 'ACTIVE'}">
                 <form th:action="@{/rides/{id}/start(id=${ride.id})}" method="post">
                     <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
@@ -80,7 +80,7 @@
                 </form>
             </div>
 
-            <div class="ride-card-actions"
+            <div class="ride-card-actions ride-card-actions--ongoing"
                  th:if="${ride.status.name() == 'ONGOING'}">
                 <div class="driver-location-session"
                      data-driver-location-session
